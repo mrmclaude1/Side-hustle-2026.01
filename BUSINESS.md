@@ -75,9 +75,10 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
 
 ## Roadmap (build order)
 
-- [x] **MVP** — scanner, score, dashboard, API, CLI, tests (this PR)
+- [x] **MVP** — scanner, score, dashboard, API, CLI, tests
+- [x] **Historical storage + sparklines** (SQLite) so scores have trend — Δ score
+      column, `/api/snapshot`, `/api/history/{base}`
 - [ ] Multi-exchange data (add Binance/Bybit public APIs) for cross-exchange basis
-- [ ] Historical storage + sparklines (SQLite/Postgres) so scores have trend
 - [ ] User accounts + Stripe + the Pro tier gate
 - [ ] Alerts (Telegram bot is the cheapest, highest-retention channel)
 - [ ] Landing page + 1 piece of SEO content per week (the actual growth engine)

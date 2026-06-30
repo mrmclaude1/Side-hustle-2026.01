@@ -61,9 +61,11 @@ PERP_RADAR_DEMO=1 uvicorn app.main:app
 | Endpoint | Description |
 |---|---|
 | `GET /` | Dashboard UI |
-| `GET /api/health` | Liveness + data source |
-| `GET /api/scan?min_volume_usd=&limit=&quote=USD&demo=` | Ranked, scored assets + market summary |
-| `GET /api/asset/{base}` | Single asset detail (e.g. `/api/asset/BTC`) |
+| `GET /api/health` | Liveness + data source + history size |
+| `GET /api/scan?min_volume_usd=&limit=&quote=USD&demo=` | Ranked, scored assets + market summary (each asset includes `score_delta` vs the last snapshot) |
+| `GET /api/snapshot` | Record a full scan into history. Call on a schedule to build trends. |
+| `GET /api/history/{base}` | Score/price time series for one asset (e.g. `/api/history/BTC`) |
+| `GET /api/asset/{base}` | Single asset detail + its history |
 
 Example:
 
@@ -90,12 +92,30 @@ exactly why an asset surfaced. Tune the weights to your own strategy.
 
 ---
 
+## History & trends
+
+A single score is noise; a *rising* score is signal. Scan snapshots are
+persisted to SQLite so the dashboard can show a **Δ score** column and
+click-to-expand **sparklines**.
+
+- DB location: `PERP_RADAR_DB` env var (default `perp_radar.db`; use `:memory:`
+  to disable on-disk persistence).
+- Build history by hitting `GET /api/snapshot` on a schedule. For example, a
+  cron entry every 15 minutes:
+
+  ```cron
+  */15 * * * * curl -s http://localhost:8000/api/snapshot >/dev/null
+  ```
+
+  Old snapshots are pruned automatically (keeps the most recent ~2000).
+
 ## Architecture
 
 ```
 app/
   analytics.py   Pure signal functions (no network/clock) — fully unit-tested
   sources.py     Live fetch (stdlib urllib) + TTL cache + offline fixture fallback
+  store.py       SQLite history store (snapshots, trends, sparklines) — tested
   main.py        FastAPI: JSON API + static dashboard
   cli.py         Terminal scanner
   static/        Zero-build dashboard (HTML/CSS/vanilla JS)

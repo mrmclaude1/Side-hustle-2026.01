@@ -83,8 +83,14 @@ function renderRows() {
   $("#rows").innerHTML = rows
     .map((r) => {
       const badge = r.has_perp ? '<span class="badge">PERP</span>' : "";
-      return `<tr>
+      const d = r.score_delta;
+      const delta =
+        d === null || d === undefined
+          ? '<span class="muted">—</span>'
+          : `<span class="${signedClass(d)}">${d > 0 ? "▲" : d < 0 ? "▼" : "•"} ${Math.abs(d).toFixed(1)}</span>`;
+      return `<tr data-base="${r.base}" class="data-row">
         <td class="num"><span class="score" style="color:${scoreColor(r.radar_score)}">${r.radar_score.toFixed(1)}</span></td>
+        <td class="num">${delta}</td>
         <td><span class="asset">${r.base}</span>${badge}</td>
         <td class="num">${fmtPrice(r.price)}</td>
         <td class="num ${signedClass(r.change_pct)}">${fmtNum(r.change_pct, { pct: true, sign: true })}</td>
@@ -121,11 +127,53 @@ async function load() {
   }
 }
 
+function sparkline(points, w = 240, h = 40) {
+  const vals = points.map((p) => p.radar_score).filter((v) => v !== null);
+  if (vals.length < 2) return '<span class="muted">Not enough history yet — snapshots build over time.</span>';
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const span = max - min || 1;
+  const step = w / (vals.length - 1);
+  const pts = vals
+    .map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / span) * h).toFixed(1)}`)
+    .join(" ");
+  const last = vals[vals.length - 1];
+  return `<svg width="${w}" height="${h}" class="spark">
+      <polyline points="${pts}" fill="none" stroke="${scoreColor(last)}" stroke-width="2"/>
+    </svg> <span class="muted">score ${min.toFixed(1)}–${max.toFixed(1)} over ${vals.length} snapshots</span>`;
+}
+
+async function toggleDetail(tr) {
+  const base = tr.dataset.base;
+  const next = tr.nextElementSibling;
+  if (next && next.classList.contains("detail-row")) {
+    next.remove();
+    return;
+  }
+  // Close any other open detail row.
+  document.querySelectorAll(".detail-row").forEach((el) => el.remove());
+  const dr = document.createElement("tr");
+  dr.className = "detail-row";
+  dr.innerHTML = `<td colspan="10" class="detail">Loading ${base} history…</td>`;
+  tr.after(dr);
+  try {
+    const res = await fetch(`/api/history/${encodeURIComponent(base)}`);
+    const data = await res.json();
+    dr.querySelector(".detail").innerHTML =
+      `<strong>${base}</strong> &nbsp; ` + sparkline(data.points);
+  } catch (e) {
+    dr.querySelector(".detail").textContent = "Failed to load history.";
+  }
+}
+
 function wire() {
   $("#refresh").addEventListener("click", load);
   $("#min-volume").addEventListener("change", load);
   $("#limit").addEventListener("change", load);
   $("#perps-only").addEventListener("change", renderRows);
+  $("#rows").addEventListener("click", (e) => {
+    const tr = e.target.closest("tr.data-row");
+    if (tr) toggleDetail(tr);
+  });
   document.querySelectorAll("thead th").forEach((th) => {
     th.addEventListener("click", () => {
       const k = th.dataset.k;

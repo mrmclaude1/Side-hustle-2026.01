@@ -73,7 +73,10 @@ thead th {
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 th.sorted { color: var(--accent); }
 tbody td { padding: 9px 16px; border-bottom: 1px solid #18202e; white-space: nowrap; }
+tbody tr.data-row { cursor: pointer; }
 tbody tr:hover { background: var(--panel); }
+tr.detail-row td.detail { background: var(--panel); padding: 14px 16px; color: var(--text); }
+svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6px; padding: 4px; }
 .asset { font-weight: 700; }
 .badge { font-size: 10px; color: var(--accent); border: 1px solid #234; border-radius: 5px; padding: 1px 5px; margin-left: 6px; }
 .pos { color: var(--green); }
