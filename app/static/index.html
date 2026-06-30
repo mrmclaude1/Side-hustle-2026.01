@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perp Radar — crypto market scanner</title>
+  <meta name="description" content="Live perpetual-vs-spot basis, momentum, volatility and liquidity scanner across crypto markets." />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">◎</span>
+      <div>
+        <h1>Perp Radar</h1>
+        <p class="tag">Perp/spot basis · momentum · volatility · liquidity — one scan.</p>
+      </div>
+    </div>
+    <div class="status">
+      <span id="source-pill" class="pill">…</span>
+      <button id="refresh" title="Refresh now">↻ Refresh</button>
+    </div>
+  </header>
+
+  <section class="summary" id="summary"><!-- filled by JS --></section>
+
+  <section class="controls">
+    <label>Min 24h volume (USD)
+      <input id="min-volume" type="number" min="0" step="100000" value="0" />
+    </label>
+    <label>Show
+      <select id="limit">
+        <option>25</option><option selected>50</option>
+        <option>100</option><option>250</option>
+      </select>
+    </label>
+    <label class="check">
+      <input id="perps-only" type="checkbox" /> Perps only
+    </label>
+    <span class="spacer"></span>
+    <span class="muted" id="updated"></span>
+  </section>
+
+  <table id="grid">
+    <thead>
+      <tr>
+        <th data-k="radar_score" class="num sorted">Score</th>
+        <th data-k="base">Asset</th>
+        <th data-k="price" class="num">Price</th>
+        <th data-k="change_pct" class="num">24h %</th>
+        <th data-k="basis_bps" class="num">Basis (bps)</th>
+        <th data-k="range_pct" class="num">Range %</th>
+        <th data-k="spread_bps" class="num">Spread (bps)</th>
+        <th data-k="open_interest" class="num">Open Interest</th>
+        <th data-k="volume_usd" class="num">Volume (USD)</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <footer>
+    <p>
+      Data: Crypto.com public API. <strong>Educational analytics only — not
+      investment advice.</strong> Scores rank how <em>unusual</em> an asset
+      looks now; they do not predict returns. Crypto is volatile and you can
+      lose your entire stake.
+    </p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
