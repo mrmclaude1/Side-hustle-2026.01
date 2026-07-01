@@ -21,7 +21,7 @@ human or AI — promising a *guaranteed* 200× is describing a scam or a lottery
 ticket. I won't sell you that.
 
 What I **can** do is build you a **real, owned asset** with genuine (if smaller)
-upside, and hand you the controls. That asset is **Perp Radar** — the market
+upside, and hand you the controls. That asset is **Marketsonar** — the market
 analytics tool in this repo.
 
 ## Why this concept
@@ -91,8 +91,8 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
       scanner moved to `/app`
 - [ ] 1 piece of SEO content per week (the actual growth engine — ongoing)
 - [ ] **Wire your Stripe account** (needs your identity) — create the product/
-      price, set `STRIPE_WEBHOOK_SECRET` + `PERP_RADAR_ADMIN_TOKEN` +
-      `PERP_RADAR_CHECKOUT_URL`, flip it on
+      price, set `STRIPE_WEBHOOK_SECRET` + `MARKETSONAR_ADMIN_TOKEN` +
+      `MARKETSONAR_CHECKOUT_URL`, flip it on
 
 ## What I need from you (minimal)
 

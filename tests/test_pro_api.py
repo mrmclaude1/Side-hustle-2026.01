@@ -1,5 +1,5 @@
 """Pro-tier API: gating, key provisioning, and the billing webhook end-to-end.
-conftest sets PERP_RADAR_ADMIN_TOKEN=test-admin and disables rate limiting."""
+conftest sets MARKETSONAR_ADMIN_TOKEN=test-admin and disables rate limiting."""
 
 import json
 
@@ -25,7 +25,7 @@ def test_pricing_and_me():
 
 
 def test_invalid_key_rejected():
-    assert client.get("/api/me", headers={"X-API-Key": "perp_bogus"}).status_code == 401
+    assert client.get("/api/me", headers={"X-API-Key": "ms_bogus"}).status_code == 401
 
 
 def test_free_scan_limit_capped():

@@ -1,6 +1,6 @@
 """Alert delivery.
 
-If PERP_RADAR_WEBHOOK_URL is set, triggered alerts are POSTed there as JSON.
+If MARKETSONAR_WEBHOOK_URL is set, triggered alerts are POSTed there as JSON.
 This is intentionally generic — it works with Discord/Slack incoming webhooks,
 a Telegram relay, or any HTTP endpoint — and needs no secret baked into the
 code. When the env var is unset, delivery is a no-op (returns 0) so the app
@@ -16,7 +16,7 @@ from typing import Optional
 
 
 def webhook_url() -> Optional[str]:
-    url = os.environ.get("PERP_RADAR_WEBHOOK_URL", "").strip()
+    url = os.environ.get("MARKETSONAR_WEBHOOK_URL", "").strip()
     return url or None
 
 
@@ -27,10 +27,10 @@ def format_payload(triggers: list[dict], ts: str) -> dict:
         for t in triggers
     ]
     return {
-        "source": "perp-radar",
+        "source": "marketsonar",
         "ts": ts,
         "count": len(triggers),
-        "text": "🚨 Perp Radar alerts\n" + "\n".join(lines),
+        "text": "🚨 Marketsonar alerts\n" + "\n".join(lines),
         "triggers": triggers,
     }
 

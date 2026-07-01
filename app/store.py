@@ -273,7 +273,7 @@ def list_events(conn: sqlite3.Connection, limit: int = 100) -> list[dict]:
 # --- API keys / plans -----------------------------------------------------
 
 def generate_key_string() -> str:
-    return "perp_" + secrets.token_urlsafe(24)
+    return "ms_" + secrets.token_urlsafe(24)
 
 
 def _key_to_dict(row: sqlite3.Row) -> dict:
