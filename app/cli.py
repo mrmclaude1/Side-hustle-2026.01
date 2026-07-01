@@ -19,7 +19,7 @@ def _fmt(v, suffix="", width=9):
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Marketsonar CLI scanner")
+    ap = argparse.ArgumentParser(description="BasicPulse CLI scanner")
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--min-volume", type=float, default=0.0)
     ap.add_argument("--quote", default="USD")
@@ -35,7 +35,7 @@ def main() -> None:
     )
     s = result["summary"]
 
-    print(f"\nMarketsonar  —  data source: {snap['source']}  "
+    print(f"\nBasicPulse  —  data source: {snap['source']}  "
           f"({s['assets']} assets)")
     print(f"Breadth: {s['advancers']}↑ / {s['decliners']}↓  "
           f"({s['breadth_pct']}% advancing)   "

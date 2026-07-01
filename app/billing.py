@@ -5,12 +5,12 @@ is fully testable. When you go live you set two env vars and point a Stripe
 webhook at POST /api/billing/webhook:
 
     STRIPE_WEBHOOK_SECRET   # verifies incoming webhooks (whsec_...)
-    MARKETSONAR_ADMIN_TOKEN  # protects manual key provisioning
+    BASICPULSE_ADMIN_TOKEN  # protects manual key provisioning
 
 Upgrade flow (no code changes needed):
   1. A user creates a free API key (POST /api/keys or the dashboard).
   2. They subscribe via a Stripe Checkout link that carries their key in
-     `client_reference_id` (or metadata.marketsonar_key).
+     `client_reference_id` (or metadata.basicpulse_key).
   3. Stripe fires `checkout.session.completed` / subscription events →
      apply_stripe_event upgrades that key to `pro` and maps it to the customer.
   4. `customer.subscription.deleted` (or a canceled status) downgrades to free.
@@ -75,13 +75,13 @@ def verify_signature(
 
 def _extract_key_hint(obj: dict) -> Optional[str]:
     """Pull an existing API key out of a Stripe object if the checkout carried
-    one (client_reference_id or metadata.marketsonar_key)."""
+    one (client_reference_id or metadata.basicpulse_key)."""
     ref = obj.get("client_reference_id")
-    if isinstance(ref, str) and ref.startswith("ms_"):
+    if isinstance(ref, str) and ref.startswith("bp_"):
         return ref
     meta = obj.get("metadata") or {}
-    k = meta.get("marketsonar_key")
-    return k if isinstance(k, str) and k.startswith("ms_") else None
+    k = meta.get("basicpulse_key")
+    return k if isinstance(k, str) and k.startswith("bp_") else None
 
 
 # Statuses that mean "no longer entitled".

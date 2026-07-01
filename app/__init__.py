@@ -1,3 +1,3 @@
-"""Marketsonar — crypto market-data analytics engine and dashboard."""
+"""BasicPulse — crypto market-data analytics engine and dashboard."""
 
 __version__ = "0.1.0"

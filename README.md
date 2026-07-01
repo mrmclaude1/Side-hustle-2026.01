@@ -1,4 +1,4 @@
-# Marketsonar
+# BasicPulse
 
 A crypto **market-structure scanner**. It pulls a live snapshot of every
 market on the Crypto.com public exchange and, in one view, ranks assets by:
@@ -37,7 +37,7 @@ uvicorn app.main:app --reload
 - `/` — marketing **landing page** (hero, features, live pricing, FAQ)
 - `/app` — the live **scanner dashboard**
 
-Set `MARKETSONAR_CHECKOUT_URL` to your Stripe Checkout link to wire the landing
+Set `BASICPULSE_CHECKOUT_URL` to your Stripe Checkout link to wire the landing
 page's "Get Pro" button (see `.env.example`).
 
 No API key required — the data source is Crypto.com's free public endpoint.
@@ -56,7 +56,7 @@ python -m app.cli --demo                           # bundled snapshot
 Force the bundled snapshot anywhere:
 
 ```bash
-MARKETSONAR_DEMO=1 uvicorn app.main:app
+BASICPULSE_DEMO=1 uvicorn app.main:app
 ```
 
 ---
@@ -115,7 +115,7 @@ A single score is noise; a *rising* score is signal. Scan snapshots are
 persisted to SQLite so the dashboard can show a **Δ score** column and
 click-to-expand **sparklines**.
 
-- DB location: `MARKETSONAR_DB` env var (default `marketsonar.db`; use `:memory:`
+- DB location: `BASICPULSE_DB` env var (default `basicpulse.db`; use `:memory:`
   to disable on-disk persistence).
 - Build history by hitting `GET /api/snapshot` on a schedule. For example, a
   cron entry every 15 minutes:
@@ -143,10 +143,10 @@ unknown key ⇒ 401; gated feature without Pro ⇒ 402; over rate limit ⇒ 429.
 
 **Going live is config-only — no code changes:**
 
-1. Set `MARKETSONAR_ADMIN_TOKEN` and `STRIPE_WEBHOOK_SECRET` (see `.env.example`).
+1. Set `BASICPULSE_ADMIN_TOKEN` and `STRIPE_WEBHOOK_SECRET` (see `.env.example`).
 2. Point a Stripe webhook at `POST /api/billing/webhook`.
 3. Create a Stripe Checkout link for your price. Have the user pass their API
-   key in the checkout's `client_reference_id` (or `metadata.marketsonar_key`).
+   key in the checkout's `client_reference_id` (or `metadata.basicpulse_key`).
 4. On `checkout.session.completed` / subscription events the key is upgraded to
    `pro` and mapped to the Stripe customer; on cancellation it downgrades.
 
@@ -157,7 +157,7 @@ webhook accepts unverified events (dev/demo only) — **set it in production.**
 Provision keys manually (comps/testing):
 
 ```bash
-curl -X POST localhost:8000/api/keys -H "X-Admin-Token: $MARKETSONAR_ADMIN_TOKEN" \
+curl -X POST localhost:8000/api/keys -H "X-Admin-Token: $BASICPULSE_ADMIN_TOKEN" \
   -H 'Content-Type: application/json' -d '{"plan":"pro","label":"founder"}'
 ```
 
@@ -193,7 +193,7 @@ Operators: `>=`, `<=`, `>`, `<`.
 To push triggers to Discord/Slack/Telegram, set an incoming-webhook URL:
 
 ```bash
-export MARKETSONAR_WEBHOOK_URL="https://discord.com/api/webhooks/…"
+export BASICPULSE_WEBHOOK_URL="https://discord.com/api/webhooks/…"
 ```
 
 Delivery is a no-op when unset, so the app runs fine without any integration.
@@ -237,8 +237,8 @@ pytest -q
 Any container host works. A `Dockerfile` is included:
 
 ```bash
-docker build -t marketsonar .
-docker run -p 8000:8000 marketsonar
+docker build -t basicpulse .
+docker run -p 8000:8000 basicpulse
 ```
 
 For Render/Railway/Fly: build the image (or use `requirements.txt`) and run

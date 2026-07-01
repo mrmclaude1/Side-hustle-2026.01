@@ -38,7 +38,7 @@ def fetch_live(timeout: float = 10.0) -> list[dict]:
     """Fetch a fresh ticker snapshot from Crypto.com. Raises on failure."""
     req = urllib.request.Request(
         CRYPTO_COM_TICKERS_URL,
-        headers={"User-Agent": "marketsonar/0.1 (+https://github.com)"},
+        headers={"User-Agent": "basicpulse/0.1 (+https://github.com)"},
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
@@ -55,10 +55,10 @@ def get_tickers(
     """Return {"data", "source", "age"} using cache -> live -> fixture order.
 
     force_demo=True always uses the fixture (handy for deterministic demos).
-    The MARKETSONAR_DEMO=1 env var has the same effect.
+    The BASICPULSE_DEMO=1 env var has the same effect.
     """
     if force_demo is None:
-        force_demo = os.environ.get("MARKETSONAR_DEMO") == "1"
+        force_demo = os.environ.get("BASICPULSE_DEMO") == "1"
 
     now = time.time()
     if _cache and (now - _cache["ts"]) < ttl:
@@ -99,7 +99,7 @@ def get_records(
     from .exchanges import ADAPTERS, DEFAULT_EXCHANGES
 
     if force_demo is None:
-        force_demo = os.environ.get("MARKETSONAR_DEMO") == "1"
+        force_demo = os.environ.get("BASICPULSE_DEMO") == "1"
     names = tuple(exchanges) if exchanges else DEFAULT_EXCHANGES
     key = ",".join(sorted(names)) + ("|demo" if force_demo else "")
 
