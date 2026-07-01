@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perp Radar — crypto market-structure scanner (basis, funding pressure, cross-exchange arb)</title>
+  <meta name="description" content="Perp Radar scans hundreds of crypto markets and ranks them by perp/spot basis, momentum, volatility, liquidity and cross-exchange dislocation — with trends, alerts and a JSON API." />
+  <link rel="canonical" href="/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Perp Radar — crypto market-structure scanner" />
+  <meta property="og:description" content="One scan across hundreds of markets: perp/spot basis, momentum, volatility, liquidity, cross-exchange arb, trends and alerts." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/landing.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Perp Radar",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "description": "Crypto market-structure scanner: perp/spot basis, momentum, volatility, liquidity, cross-exchange dislocation, trends, alerts and a JSON API.",
+    "offers": [
+      {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD"},
+      {"@type": "Offer", "name": "Pro", "priceCurrency": "USD"}
+    ]
+  }
+  </script>
+</head>
+<body class="landing">
+  <nav class="lp-nav">
+    <a class="brand" href="/">
+      <span class="logo">◎</span> <strong>Perp Radar</strong>
+    </a>
+    <div class="lp-nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-ghost" href="/app">Open the scanner</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">Crypto market-structure, distilled</p>
+    <h1>See where the market is <span class="accent">dislocated</span> — in one scan.</h1>
+    <p class="sub">
+      Perp Radar ranks hundreds of markets by perp/spot <strong>basis</strong>,
+      momentum, volatility, liquidity and <strong>cross-exchange</strong> price
+      gaps — then trends and alerts on what matters. Stop scrolling 900 tickers.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="/app">Open the live scanner →</a>
+      <a class="btn btn-ghost" id="hero-pro" href="#pricing">Get Pro</a>
+    </div>
+    <p class="micro" id="live-stat">Live snapshot loading…</p>
+    <p class="micro disclaimer">Educational analytics — not investment advice. Crypto is volatile; you can lose your entire stake.</p>
+  </header>
+
+  <section id="features" class="lp-section">
+    <h2>What it surfaces</h2>
+    <div class="feature-grid">
+      <div class="feature"><h3>◎ Radar Score</h3><p>A transparent 0–100 rank blending momentum, basis, volatility and liquidity — fully auditable, no black box.</p></div>
+      <div class="feature"><h3>⇅ Perp/spot basis</h3><p>Where perpetuals trade above or below spot — a real read on crowded positioning and funding pressure.</p></div>
+      <div class="feature"><h3>↗ Trends &amp; sparklines</h3><p>Scores are stored over time, so a <em>rising</em> score is the signal — not a noisy snapshot.</p></div>
+      <div class="feature"><h3>🔀 Cross-exchange</h3><p>The same asset priced across Crypto.com, Binance &amp; Bybit — spot dispersion and crossed-book arb edge.</p></div>
+      <div class="feature"><h3>🚨 Alerts</h3><p>Rules like <code>basis ≤ −50bps</code> or <code>score ≥ 80</code>, pushed to Discord/Slack/Telegram.</p></div>
+      <div class="feature"><h3>{ } JSON API</h3><p>Every signal via a clean API with keys, plans and rate limits — build on top of it.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing" class="lp-section">
+    <h2>Pricing</h2>
+    <p class="section-sub">The dashboard is free forever. Upgrade for depth, premium signals, exports and unlimited alerts.</p>
+    <div id="lp-pricing" class="pricing-grid lp-pricing"><!-- filled by JS --></div>
+    <p class="micro">Prices shown on the checkout page. API access uses the <code>X-API-Key</code> header.</p>
+  </section>
+
+  <section id="faq" class="lp-section">
+    <h2>FAQ</h2>
+    <details><summary>Is this financial advice?</summary><p>No. Perp Radar is an analytics tool. The Radar Score ranks how <em>unusual</em> a market looks right now; it does not predict returns. Crypto is volatile and you can lose everything.</p></details>
+    <details><summary>Where does the data come from?</summary><p>Public exchange APIs (Crypto.com, Binance, Bybit). No account or key is needed to use the free dashboard.</p></details>
+    <details><summary>What is "basis"?</summary><p>The gap between a perpetual future's price and spot. Persistent positive basis means longs are paying to hold (crowded-long); negative means shorts are paying. It's a widely-watched market-structure indicator.</p></details>
+    <details><summary>Do you offer an API?</summary><p>Yes — a JSON API with free and Pro keys, per-plan rate limits, premium signals and CSV export.</p></details>
+    <details><summary>Can I self-host?</summary><p>Yes. It's a small FastAPI app with a Dockerfile; the whole thing runs offline against a bundled snapshot if needed.</p></details>
+  </section>
+
+  <footer class="lp-footer">
+    <div><span class="logo">◎</span> <strong>Perp Radar</strong></div>
+    <div class="lp-footer-links">
+      <a href="/app">Scanner</a>
+      <a href="/api/pricing">API pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <p class="micro">© Perp Radar. Educational analytics only — not investment advice.</p>
+  </footer>
+
+  <script src="/static/landing.js"></script>
+</body>
+</html>

@@ -56,9 +56,20 @@ def test_asset_lookup_and_404():
     assert nf.status_code == 404
 
 
-def test_index_and_static():
-    assert client.get("/").status_code == 200
+def test_landing_dashboard_and_static():
+    # "/" is the marketing landing page; the app lives at "/app".
+    landing = client.get("/")
+    assert landing.status_code == 200
+    assert "Perp Radar" in landing.text and "Pricing" in landing.text
+    app_page = client.get("/app")
+    assert app_page.status_code == 200 and 'id="cross"' in app_page.text
     assert client.get("/static/app.js").status_code == 200
+    assert client.get("/static/landing.js").status_code == 200
+
+
+def test_pricing_exposes_checkout_url_field():
+    body = client.get("/api/pricing").json()
+    assert "checkout_url" in body  # empty until PERP_RADAR_CHECKOUT_URL is set
 
 
 def test_alert_rule_crud_and_validation():

@@ -86,9 +86,13 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
       gated `pro/signals` + CSV export, unlimited alerts, and a Stripe webhook
       that upgrades/downgrades keys. Ships dark; goes live on config only.
 - [x] **Public API with keys/quotas** — `X-API-Key` auth, per-plan rate limits
-- [ ] Landing page + 1 piece of SEO content per week (the actual growth engine)
+- [x] **Landing page** — SEO-optimized marketing page at `/` (hero, features,
+      live pricing, FAQ, JSON-LD) with a config-driven Stripe Checkout CTA;
+      scanner moved to `/app`
+- [ ] 1 piece of SEO content per week (the actual growth engine — ongoing)
 - [ ] **Wire your Stripe account** (needs your identity) — create the product/
-      price, set `STRIPE_WEBHOOK_SECRET` + `PERP_RADAR_ADMIN_TOKEN`, flip it on
+      price, set `STRIPE_WEBHOOK_SECRET` + `PERP_RADAR_ADMIN_TOKEN` +
+      `PERP_RADAR_CHECKOUT_URL`, flip it on
 
 ## What I need from you (minimal)
 

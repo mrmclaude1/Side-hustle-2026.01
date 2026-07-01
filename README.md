@@ -32,8 +32,13 @@ Or manually:
 ```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-# open http://127.0.0.1:8000
 ```
+
+- `/` — marketing **landing page** (hero, features, live pricing, FAQ)
+- `/app` — the live **scanner dashboard**
+
+Set `PERP_RADAR_CHECKOUT_URL` to your Stripe Checkout link to wire the landing
+page's "Get Pro" button (see `.env.example`).
 
 No API key required — the data source is Crypto.com's free public endpoint.
 If the network is unavailable, the app automatically falls back to a bundled
@@ -208,7 +213,7 @@ app/
   billing.py     Stripe signature verify + event handling — tested
   main.py        FastAPI: JSON API + static dashboard
   cli.py         Terminal scanner
-  static/        Zero-build dashboard (HTML/CSS/vanilla JS)
+  static/        Landing page + zero-build dashboard (HTML/CSS/vanilla JS)
   fixtures/      Real captured market snapshot (demo + tests)
 tests/           pytest suite (runs offline)
 ```

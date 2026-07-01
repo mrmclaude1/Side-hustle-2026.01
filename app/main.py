@@ -118,7 +118,10 @@ def api_pricing() -> JSONResponse:
                     "features": sorted(cfg["features"]),
                 }
                 for name, cfg in access.PLANS.items()
-            }
+            },
+            # Set PERP_RADAR_CHECKOUT_URL to your Stripe Checkout link to wire
+            # the landing page's "Get Pro" button. Empty until configured.
+            "checkout_url": os.environ.get("PERP_RADAR_CHECKOUT_URL", "").strip(),
         }
     )
 
@@ -365,7 +368,12 @@ def api_asset(base: str, demo: bool = False) -> JSONResponse:
 
 
 @app.get("/")
-def index() -> FileResponse:
+def landing() -> FileResponse:
+    return FileResponse(_STATIC / "landing.html")
+
+
+@app.get("/app")
+def dashboard() -> FileResponse:
     return FileResponse(_STATIC / "index.html")
 
 
