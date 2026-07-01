@@ -6,3 +6,5 @@ import os
 
 os.environ.setdefault("PERP_RADAR_DB", ":memory:")
 os.environ.setdefault("PERP_RADAR_DEMO", "1")
+os.environ.setdefault("PERP_RADAR_DISABLE_RATELIMIT", "1")
+os.environ.setdefault("PERP_RADAR_ADMIN_TOKEN", "test-admin")

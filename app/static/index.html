@@ -17,6 +17,7 @@
       </div>
     </div>
     <div class="status">
+      <span id="plan-pill" class="pill" title="Your plan">plan: …</span>
       <span id="source-pill" class="pill">…</span>
       <button id="refresh" title="Refresh now">↻ Refresh</button>
     </div>
@@ -58,6 +59,16 @@
     </thead>
     <tbody id="rows"></tbody>
   </table>
+
+  <section class="pro" id="pro">
+    <h2>Pro</h2>
+    <p class="muted">
+      The dashboard is free. Pro unlocks deeper scans, cross-exchange &amp;
+      premium signals via API, CSV export, and unlimited alerts. Bring an API
+      key with the <code>X-API-Key</code> header (or <code>?api_key=</code>).
+    </p>
+    <div id="pricing-grid" class="pricing-grid"></div>
+  </section>
 
   <section class="cross" id="cross">
     <h2>Cross-Exchange dislocation</h2>

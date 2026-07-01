@@ -82,9 +82,13 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
       (Discord/Slack/Telegram), managed from the dashboard or API
 - [x] **Multi-exchange data** (Crypto.com + Binance + Bybit) — normalized
       adapters, cross-exchange price dispersion + arb view (`/api/cross`)
-- [ ] User accounts + Stripe + the Pro tier gate
+- [x] **Pro tier (Stripe-ready)** — API keys + plans, per-tier rate limits,
+      gated `pro/signals` + CSV export, unlimited alerts, and a Stripe webhook
+      that upgrades/downgrades keys. Ships dark; goes live on config only.
+- [x] **Public API with keys/quotas** — `X-API-Key` auth, per-plan rate limits
 - [ ] Landing page + 1 piece of SEO content per week (the actual growth engine)
-- [ ] Public API with keys/quotas
+- [ ] **Wire your Stripe account** (needs your identity) — create the product/
+      price, set `STRIPE_WEBHOOK_SECRET` + `PERP_RADAR_ADMIN_TOKEN`, flip it on
 
 ## What I need from you (minimal)
 

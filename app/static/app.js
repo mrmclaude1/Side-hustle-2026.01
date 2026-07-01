@@ -165,6 +165,32 @@ async function toggleDetail(tr) {
   }
 }
 
+async function loadPlan() {
+  try {
+    const me = await (await fetch("/api/me")).json();
+    const pill = $("#plan-pill");
+    pill.textContent = "plan: " + me.plan.toUpperCase();
+    pill.className = "pill " + (me.plan === "pro" ? "live" : "");
+  } catch (e) { /* optional */ }
+}
+
+async function loadPricing() {
+  try {
+    const data = await (await fetch("/api/pricing")).json();
+    const grid = $("#pricing-grid");
+    grid.innerHTML = Object.entries(data.plans)
+      .map(([name, p]) => {
+        const feats = p.features.map((f) => `<li>${f}</li>`).join("");
+        return `<div class="plan-card ${name === "pro" ? "pro-card" : ""}">
+          <h3>${name.toUpperCase()}</h3>
+          <div class="muted">${p.rate_per_min}/min · scan ≤ ${p.max_scan_limit} · ${p.max_alert_rules} alert rules</div>
+          <ul>${feats}</ul>
+        </div>`;
+      })
+      .join("");
+  } catch (e) { /* optional */ }
+}
+
 async function loadCross() {
   try {
     const data = await (await fetch("/api/cross?limit=25")).json();
@@ -256,6 +282,8 @@ function wire() {
     });
   });
   load();
+  loadPlan();
+  loadPricing();
   loadCross();
   loadAlerts();
   setInterval(load, 60000); // auto-refresh every 60s

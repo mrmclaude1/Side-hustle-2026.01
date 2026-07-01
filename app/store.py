@@ -13,6 +13,7 @@ Design notes:
 
 from __future__ import annotations
 
+import secrets
 import sqlite3
 from typing import Optional
 
@@ -82,6 +83,17 @@ def init_db(conn: sqlite3.Connection) -> None:
             value     REAL
         );
         CREATE INDEX IF NOT EXISTS idx_events_ts ON alert_events(ts);
+
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+            key                TEXT UNIQUE NOT NULL,
+            plan               TEXT NOT NULL DEFAULT 'free',
+            label              TEXT,
+            active             INTEGER NOT NULL DEFAULT 1,
+            stripe_customer_id TEXT,
+            created_ts         TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_keys_customer ON api_keys(stripe_customer_id);
         """
     )
     conn.commit()
@@ -256,6 +268,111 @@ def list_events(conn: sqlite3.Connection, limit: int = 100) -> list[dict]:
         "SELECT * FROM alert_events ORDER BY id DESC LIMIT ?", (limit,)
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+# --- API keys / plans -----------------------------------------------------
+
+def generate_key_string() -> str:
+    return "perp_" + secrets.token_urlsafe(24)
+
+
+def _key_to_dict(row: sqlite3.Row) -> dict:
+    return {
+        "key": row["key"],
+        "plan": row["plan"],
+        "label": row["label"],
+        "active": bool(row["active"]),
+        "stripe_customer_id": row["stripe_customer_id"],
+        "created_ts": row["created_ts"],
+    }
+
+
+def create_key(
+    conn: sqlite3.Connection,
+    plan: str = "free",
+    label: Optional[str] = None,
+    ts: Optional[str] = None,
+    stripe_customer_id: Optional[str] = None,
+    key: Optional[str] = None,
+) -> dict:
+    key = key or generate_key_string()
+    conn.execute(
+        "INSERT INTO api_keys (key, plan, label, stripe_customer_id, created_ts) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (key, plan, label, stripe_customer_id, ts),
+    )
+    conn.commit()
+    return get_key(conn, key)
+
+
+def get_key(conn: sqlite3.Connection, key: str) -> Optional[dict]:
+    row = conn.execute("SELECT * FROM api_keys WHERE key = ?", (key,)).fetchone()
+    return _key_to_dict(row) if row else None
+
+
+def resolve_plan(conn: sqlite3.Connection, key: Optional[str]) -> Optional[str]:
+    """Return the plan for an active key, or None if the key is missing/invalid/
+    inactive. Callers treat None as 'anonymous' (free)."""
+    if not key:
+        return None
+    row = conn.execute(
+        "SELECT plan FROM api_keys WHERE key = ? AND active = 1", (key,)
+    ).fetchone()
+    return row["plan"] if row else None
+
+
+def key_is_known(conn: sqlite3.Connection, key: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM api_keys WHERE key = ?", (key,)
+    ).fetchone() is not None
+
+
+def set_key_plan(conn: sqlite3.Connection, key: str, plan: str) -> bool:
+    cur = conn.execute("UPDATE api_keys SET plan = ? WHERE key = ?", (plan, key))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def deactivate_key(conn: sqlite3.Connection, key: str) -> bool:
+    cur = conn.execute("UPDATE api_keys SET active = 0 WHERE key = ?", (key,))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def list_keys(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute("SELECT * FROM api_keys ORDER BY id").fetchall()
+    return [_key_to_dict(r) for r in rows]
+
+
+def upsert_key_for_customer(
+    conn: sqlite3.Connection,
+    stripe_customer_id: str,
+    plan: str,
+    ts: Optional[str] = None,
+) -> dict:
+    """Find the key mapped to a Stripe customer and set its plan; create one if
+    none exists. Used by the billing webhook."""
+    row = conn.execute(
+        "SELECT * FROM api_keys WHERE stripe_customer_id = ? ORDER BY id LIMIT 1",
+        (stripe_customer_id,),
+    ).fetchone()
+    if row:
+        conn.execute("UPDATE api_keys SET plan = ? WHERE id = ?", (plan, row["id"]))
+        conn.commit()
+        return get_key(conn, row["key"])
+    return create_key(conn, plan=plan, ts=ts, stripe_customer_id=stripe_customer_id,
+                       label="via stripe")
+
+
+def map_key_to_customer(
+    conn: sqlite3.Connection, key: str, stripe_customer_id: str
+) -> bool:
+    cur = conn.execute(
+        "UPDATE api_keys SET stripe_customer_id = ? WHERE key = ?",
+        (stripe_customer_id, key),
+    )
+    conn.commit()
+    return cur.rowcount > 0
 
 
 def prune(conn: sqlite3.Connection, keep_snapshots: int = 2000) -> int:

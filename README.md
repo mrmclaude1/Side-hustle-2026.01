@@ -72,6 +72,12 @@ PERP_RADAR_DEMO=1 uvicorn app.main:app
 | `GET /api/alerts/events` | Recent triggered alerts |
 | `GET /api/exchanges` | Configured venues + their live endpoints |
 | `GET /api/cross?min_venues=2&limit=` | Cross-exchange price dispersion + arb per asset |
+| `GET /api/pricing` | Plan tiers, limits, and features |
+| `GET /api/me` | Caller's resolved plan + limits (send `X-API-Key`) |
+| `POST /api/keys` | Provision an API key (self-serve free; admin token → Pro) |
+| `GET /api/pro/signals` | **Pro:** full-depth scan + score percentiles |
+| `GET /api/export.csv` | **Pro:** current scan as CSV |
+| `POST /api/billing/webhook` | Stripe webhook (upgrades/downgrades keys) |
 
 Example:
 
@@ -114,6 +120,41 @@ click-to-expand **sparklines**.
   ```
 
   Old snapshots are pruned automatically (keeps the most recent ~2000).
+
+## Pro tier & billing (Stripe-ready)
+
+The browser dashboard is free. Programmatic and premium features are gated by
+**API key → plan** (`free` / `pro`), defined in `app/access.py`:
+
+| | Free | Pro |
+|---|---|---|
+| Rate limit | 120/min | 1200/min |
+| Max scan depth | 50 | 1000 |
+| Alert rules | 3 | unlimited |
+| `pro/signals`, `export.csv` | — | ✓ |
+
+Send a key via the `X-API-Key` header (or `?api_key=`). Missing key ⇒ free;
+unknown key ⇒ 401; gated feature without Pro ⇒ 402; over rate limit ⇒ 429.
+
+**Going live is config-only — no code changes:**
+
+1. Set `PERP_RADAR_ADMIN_TOKEN` and `STRIPE_WEBHOOK_SECRET` (see `.env.example`).
+2. Point a Stripe webhook at `POST /api/billing/webhook`.
+3. Create a Stripe Checkout link for your price. Have the user pass their API
+   key in the checkout's `client_reference_id` (or `metadata.perp_radar_key`).
+4. On `checkout.session.completed` / subscription events the key is upgraded to
+   `pro` and mapped to the Stripe customer; on cancellation it downgrades.
+
+Signature verification (`app/billing.py`) implements Stripe's `t=…,v1=…` scheme
+and is unit-tested without the Stripe SDK. Without `STRIPE_WEBHOOK_SECRET` the
+webhook accepts unverified events (dev/demo only) — **set it in production.**
+
+Provision keys manually (comps/testing):
+
+```bash
+curl -X POST localhost:8000/api/keys -H "X-Admin-Token: $PERP_RADAR_ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' -d '{"plan":"pro","label":"founder"}'
+```
 
 ## Cross-exchange
 
@@ -163,6 +204,8 @@ app/
   notify.py      Generic webhook delivery (Discord/Slack/Telegram/any)
   exchanges/     Per-venue adapters (cryptocom/binance/bybit) + fixtures — tested
   xexchange.py   Cross-exchange dispersion & arb analytics — tested
+  access.py      Plans, feature gating, rate limiter — tested
+  billing.py     Stripe signature verify + event handling — tested
   main.py        FastAPI: JSON API + static dashboard
   cli.py         Terminal scanner
   static/        Zero-build dashboard (HTML/CSS/vanilla JS)
