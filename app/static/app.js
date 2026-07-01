@@ -165,6 +165,32 @@ async function toggleDetail(tr) {
   }
 }
 
+async function loadCross() {
+  try {
+    const data = await (await fetch("/api/cross?limit=25")).json();
+    const s = data.summary;
+    $("#cross-venues").textContent =
+      s.venues.length ? s.venues.join(", ") : "multiple venues";
+    $("#cross-rows").innerHTML = data.assets
+      .map((a) => {
+        const arb = a.arb;
+        const edge = arb ? arb.edge_bps : null;
+        const edgeCls = edge !== null && edge > 0 ? "pos" : "muted";
+        const dir = arb ? `${arb.buy_at} → ${arb.sell_at}` : "—";
+        return `<tr>
+          <td class="num"><span class="score" style="color:${scoreColor(Math.min(100, (a.price_spread_bps || 0) * 4))}">${fmtNum(a.price_spread_bps, { dp: 1 })}</span></td>
+          <td><span class="asset">${a.base}</span></td>
+          <td class="muted">${a.venues.join(" · ")}</td>
+          <td class="num">${fmtPrice(a.reference_price)}</td>
+          <td class="num ${edgeCls}">${edge === null ? "—" : fmtNum(edge, { dp: 1 })}</td>
+          <td class="muted">${dir}</td>
+          <td class="num">$${fmtCompact(a.total_volume_usd)}</td>
+        </tr>`;
+      })
+      .join("");
+  } catch (e) { /* cross-exchange view is optional */ }
+}
+
 async function loadAlerts() {
   try {
     const meta = await (await fetch("/api/alerts")).json();
@@ -230,8 +256,10 @@ function wire() {
     });
   });
   load();
+  loadCross();
   loadAlerts();
   setInterval(load, 60000); // auto-refresh every 60s
+  setInterval(loadCross, 60000);
   setInterval(loadAlerts, 60000);
 }
 

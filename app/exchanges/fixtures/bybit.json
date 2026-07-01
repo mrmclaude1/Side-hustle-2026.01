@@ -1,0 +1,21 @@
+{
+  "spot": {
+    "result": {
+      "list": [
+        {"symbol": "BTCUSDT", "lastPrice": "58509.00", "price24hPcnt": "-0.0280", "highPrice24h": "60300.00", "lowPrice24h": "58150.00", "bid1Price": "58508.50", "ask1Price": "58509.50", "turnover24h": "312450000.00"},
+        {"symbol": "ETHUSDT", "lastPrice": "1567.90", "price24hPcnt": "-0.0308", "highPrice24h": "1620.00", "lowPrice24h": "1554.00", "bid1Price": "1567.80", "ask1Price": "1568.00", "turnover24h": "180000000.00"},
+        {"symbol": "SOLUSDT", "lastPrice": "73.46", "price24hPcnt": "0.0105", "highPrice24h": "75.80", "lowPrice24h": "71.10", "bid1Price": "73.45", "ask1Price": "73.47", "turnover24h": "95000000.00"}
+      ]
+    }
+  },
+  "linear": {
+    "result": {
+      "list": [
+        {"symbol": "BTCUSDT", "lastPrice": "58533.00", "price24hPcnt": "-0.0272", "highPrice24h": "60340.00", "lowPrice24h": "58180.00", "bid1Price": "58532.50", "ask1Price": "58533.50", "turnover24h": "890000000.00", "openInterest": "51234.5"},
+        {"symbol": "ETHUSDT", "lastPrice": "1568.40", "price24hPcnt": "-0.0301", "highPrice24h": "1623.00", "lowPrice24h": "1555.50", "bid1Price": "1568.30", "ask1Price": "1568.50", "turnover24h": "540000000.00", "openInterest": "612000.0"},
+        {"symbol": "SOLUSDT", "lastPrice": "73.51", "price24hPcnt": "0.0115", "highPrice24h": "75.95", "lowPrice24h": "71.25", "bid1Price": "73.50", "ask1Price": "73.52", "turnover24h": "410000000.00", "openInterest": "2450000.0"},
+        {"symbol": "DOGEUSDT", "lastPrice": "0.071845", "price24hPcnt": "0.0240", "highPrice24h": "0.07470", "lowPrice24h": "0.06940", "bid1Price": "0.071840", "ask1Price": "0.071850", "turnover24h": "88000000.00", "openInterest": "1200000000.0"}
+      ]
+    }
+  }
+}

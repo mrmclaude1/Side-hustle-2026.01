@@ -23,7 +23,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, alerts, analytics, notify, sources, store
+from . import __version__, alerts, analytics, notify, sources, store, xexchange
+from .exchanges import ADAPTERS, DEFAULT_EXCHANGES
 
 app = FastAPI(title="Perp Radar", version=__version__)
 
@@ -163,6 +164,31 @@ def api_alert_events(limit: int = Query(100, ge=1, le=1000)) -> JSONResponse:
 def api_history(base: str, limit: int = Query(200, ge=1, le=2000)) -> JSONResponse:
     points = store.history(_conn, base, limit=limit)
     return JSONResponse({"base": base.upper(), "points": points, "count": len(points)})
+
+
+@app.get("/api/exchanges")
+def api_exchanges() -> JSONResponse:
+    return JSONResponse(
+        {
+            "exchanges": [
+                {"name": n, "urls": ADAPTERS[n].live_urls()} for n in DEFAULT_EXCHANGES
+            ]
+        }
+    )
+
+
+@app.get("/api/cross")
+def api_cross(
+    min_venues: int = Query(2, ge=1, le=10),
+    limit: int = Query(100, ge=1, le=1000),
+    demo: bool = Query(False),
+) -> JSONResponse:
+    snap = sources.get_records(force_demo=True if demo else None)
+    result = xexchange.cross_scan(
+        snap["records"], min_venues=min_venues, limit=limit
+    )
+    result["meta"] = {"sources": snap["sources"], "cache_age_s": snap["age"]}
+    return JSONResponse(result)
 
 
 @app.get("/api/asset/{base}")

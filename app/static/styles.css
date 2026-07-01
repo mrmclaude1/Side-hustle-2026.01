@@ -85,6 +85,11 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
   display: inline-block; min-width: 42px; text-align: center; font-weight: 700;
   border-radius: 6px; padding: 2px 6px; background: var(--panel-2);
 }
+.cross { padding: 24px; border-top: 1px solid var(--line); margin-top: 20px; }
+.cross h2 { margin: 0 0 4px; font-size: 17px; }
+#cross-grid { margin-top: 12px; }
+#cross-grid thead th { position: static; }
+
 .alerts { padding: 24px; border-top: 1px solid var(--line); margin-top: 20px; }
 .alerts h2 { margin: 0 0 4px; font-size: 17px; }
 .alerts h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }

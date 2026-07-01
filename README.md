@@ -70,6 +70,8 @@ PERP_RADAR_DEMO=1 uvicorn app.main:app
 | `POST /api/alerts` | Create a rule `{name, metric, op, threshold, enabled}` |
 | `DELETE /api/alerts/{id}` | Delete a rule |
 | `GET /api/alerts/events` | Recent triggered alerts |
+| `GET /api/exchanges` | Configured venues + their live endpoints |
+| `GET /api/cross?min_venues=2&limit=` | Cross-exchange price dispersion + arb per asset |
 
 Example:
 
@@ -113,6 +115,25 @@ click-to-expand **sparklines**.
 
   Old snapshots are pruned automatically (keeps the most recent ~2000).
 
+## Cross-exchange
+
+Adapters normalise **Crypto.com, Binance, and Bybit** public tickers into one
+shape (`app/exchanges/`), and `app/xexchange.py` groups them by asset to expose:
+
+- **price_spread_bps** — how far the same asset is priced across venues
+  (dislocation), compared within the USD-stable quote family only
+- **arb** — best bid vs best ask across venues; a positive `edge_bps` is a
+  crossed book (theoretical arbitrage before fees/withdrawal constraints)
+- aggregate volume, open interest, and average momentum across venues
+
+Each adapter falls back to its own bundled fixture independently, so one venue
+being unreachable never breaks the others. The dashboard's *Cross-Exchange
+dislocation* table ranks assets by spread.
+
+> Note: Binance/Bybit adapters are written to their documented public API
+> shapes and validated against fixtures; they activate against live endpoints
+> wherever outbound access to those hosts is allowed.
+
 ## Alerts
 
 Define rules like `radar_score >= 80`, `basis_bps <= -50`, or
@@ -140,6 +161,8 @@ app/
   store.py       SQLite store: history snapshots + alert rules/events — tested
   alerts.py      Pure alert-rule evaluation — tested
   notify.py      Generic webhook delivery (Discord/Slack/Telegram/any)
+  exchanges/     Per-venue adapters (cryptocom/binance/bybit) + fixtures — tested
+  xexchange.py   Cross-exchange dispersion & arb analytics — tested
   main.py        FastAPI: JSON API + static dashboard
   cli.py         Terminal scanner
   static/        Zero-build dashboard (HTML/CSS/vanilla JS)

@@ -79,3 +79,54 @@ def get_tickers(
 
     _cache.update(ts=now, data=data, source=source)
     return {"data": data, "source": source, "age": 0.0}
+
+
+# --- Multi-exchange normalized records ------------------------------------
+
+_records_cache: dict = {}
+
+
+def get_records(
+    exchanges=None,
+    ttl: float = 30.0,
+    force_demo: Optional[bool] = None,
+) -> dict:
+    """Return {"records", "sources", "age"} of normalized ticker records
+    aggregated across exchanges. Each adapter degrades to its bundled fixture
+    independently, so one venue being unreachable never breaks the rest.
+    """
+    # Imported lazily to avoid a circular import at module load.
+    from .exchanges import ADAPTERS, DEFAULT_EXCHANGES
+
+    if force_demo is None:
+        force_demo = os.environ.get("PERP_RADAR_DEMO") == "1"
+    names = tuple(exchanges) if exchanges else DEFAULT_EXCHANGES
+    key = ",".join(sorted(names)) + ("|demo" if force_demo else "")
+
+    now = time.time()
+    cached = _records_cache.get(key)
+    if cached and (now - cached["ts"]) < ttl:
+        return {
+            "records": cached["records"],
+            "sources": cached["sources"],
+            "age": round(now - cached["ts"], 1),
+        }
+
+    records: list[dict] = []
+    src: dict[str, str] = {}
+    for name in names:
+        adapter = ADAPTERS.get(name)
+        if adapter is None:
+            continue
+        if force_demo:
+            recs, s = adapter.load_fixture(), "fixture"
+        else:
+            try:
+                recs, s = adapter.fetch(), "live"
+            except Exception:
+                recs, s = adapter.load_fixture(), "fixture"
+        records.extend(recs)
+        src[name] = s
+
+    _records_cache[key] = {"ts": now, "records": records, "sources": src}
+    return {"records": records, "sources": src, "age": 0.0}

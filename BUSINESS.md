@@ -80,7 +80,8 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
       column, `/api/snapshot`, `/api/history/{base}`
 - [x] **Alerts** — rule engine + events + generic webhook delivery
       (Discord/Slack/Telegram), managed from the dashboard or API
-- [ ] Multi-exchange data (add Binance/Bybit public APIs) for cross-exchange basis
+- [x] **Multi-exchange data** (Crypto.com + Binance + Bybit) — normalized
+      adapters, cross-exchange price dispersion + arb view (`/api/cross`)
 - [ ] User accounts + Stripe + the Pro tier gate
 - [ ] Landing page + 1 piece of SEO content per week (the actual growth engine)
 - [ ] Public API with keys/quotas

@@ -59,6 +59,30 @@
     <tbody id="rows"></tbody>
   </table>
 
+  <section class="cross" id="cross">
+    <h2>Cross-Exchange dislocation</h2>
+    <p class="muted">
+      Same asset, priced across <span id="cross-venues">multiple venues</span>.
+      Wide <strong>spread</strong> = dislocation; a positive <strong>arb edge</strong>
+      means the best bid on one venue exceeds the best ask on another (crossed
+      book, before fees/withdrawal limits).
+    </p>
+    <table id="cross-grid">
+      <thead>
+        <tr>
+          <th class="num">Spread (bps)</th>
+          <th>Asset</th>
+          <th>Venues</th>
+          <th class="num">Ref price</th>
+          <th class="num">Arb edge (bps)</th>
+          <th>Buy → Sell</th>
+          <th class="num">Volume (USD)</th>
+        </tr>
+      </thead>
+      <tbody id="cross-rows"></tbody>
+    </table>
+  </section>
+
   <section class="alerts" id="alerts">
     <h2>Alerts</h2>
     <p class="muted">

@@ -85,6 +85,19 @@ def test_alert_rule_crud_and_validation():
     assert client.delete(f"/api/alerts/{rid}").status_code == 200
 
 
+def test_exchanges_and_cross():
+    ex = client.get("/api/exchanges").json()["exchanges"]
+    names = {e["name"] for e in ex}
+    assert {"cryptocom", "binance", "bybit"} <= names
+
+    cross = client.get("/api/cross?limit=10").json()
+    assert cross["summary"]["assets"] > 0
+    assert "binance" in cross["meta"]["sources"]
+    btc = next((a for a in cross["assets"] if a["base"] == "BTC"), None)
+    assert btc is not None and btc["venue_count"] >= 2
+    assert btc["price_spread_bps"] is not None
+
+
 def test_snapshot_triggers_and_lists_events():
     # A permissive rule guarantees triggers against the fixture.
     r = client.post("/api/alerts", json={
