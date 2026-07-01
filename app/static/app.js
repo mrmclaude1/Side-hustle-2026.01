@@ -165,8 +165,55 @@ async function toggleDetail(tr) {
   }
 }
 
+async function loadAlerts() {
+  try {
+    const meta = await (await fetch("/api/alerts")).json();
+    const mSel = $("#rule-metric"), oSel = $("#rule-op");
+    if (mSel && !mSel.options.length) {
+      mSel.innerHTML = meta.metrics.map((m) => `<option>${m}</option>`).join("");
+      oSel.innerHTML = meta.ops.map((o) => `<option>${o}</option>`).join("");
+    }
+    const rl = $("#rule-list");
+    rl.innerHTML = meta.rules.length
+      ? meta.rules.map((r) =>
+          `<li><span>${r.enabled ? "" : "(off) "}<strong>${r.name}</strong>: ${r.metric} ${r.op} ${r.threshold}</span>
+           <button class="link del-rule" data-id="${r.id}">✕</button></li>`).join("")
+      : '<li class="muted">None yet.</li>';
+
+    const ev = await (await fetch("/api/alerts/events?limit=20")).json();
+    const el = $("#event-list");
+    el.innerHTML = ev.events.length
+      ? ev.events.map((e) =>
+          `<li><strong>${e.base}</strong> ${e.metric} ${e.op} ${e.threshold}
+           <span class="muted">= ${e.value} · ${new Date(e.ts).toLocaleString()}</span></li>`).join("")
+      : '<li class="muted">None yet. Record a snapshot to evaluate rules.</li>';
+  } catch (e) { /* alerts are optional; ignore load errors */ }
+}
+
+async function addRule(e) {
+  e.preventDefault();
+  const body = {
+    name: $("#rule-name").value,
+    metric: $("#rule-metric").value,
+    op: $("#rule-op").value,
+    threshold: parseFloat($("#rule-threshold").value),
+  };
+  const res = await fetch("/api/alerts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) { $("#rule-name").value = ""; $("#rule-threshold").value = ""; loadAlerts(); }
+  else { const err = await res.json(); alert(err.error || "Failed to add rule"); }
+}
+
 function wire() {
   $("#refresh").addEventListener("click", load);
+  $("#rule-form").addEventListener("submit", addRule);
+  $("#rule-list").addEventListener("click", async (e) => {
+    const b = e.target.closest(".del-rule");
+    if (b) { await fetch(`/api/alerts/${b.dataset.id}`, { method: "DELETE" }); loadAlerts(); }
+  });
   $("#min-volume").addEventListener("change", load);
   $("#limit").addEventListener("change", load);
   $("#perps-only").addEventListener("change", renderRows);
@@ -183,7 +230,9 @@ function wire() {
     });
   });
   load();
+  loadAlerts();
   setInterval(load, 60000); // auto-refresh every 60s
+  setInterval(loadAlerts, 60000);
 }
 
 document.addEventListener("DOMContentLoaded", wire);

@@ -21,8 +21,9 @@ from typing import Optional
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
-from . import __version__, analytics, sources, store
+from . import __version__, alerts, analytics, notify, sources, store
 
 app = FastAPI(title="Perp Radar", version=__version__)
 
@@ -90,17 +91,72 @@ def api_snapshot(
     """Record a full (unlimited) scan into history. Call on a schedule."""
     result = _run_scan(quote, min_volume_usd, None, demo)
     baseline = store.previous_scores(_conn)  # latest before we insert
+    ts = _now_iso()
     snap_id = store.record_scan(
-        _conn, result, ts=_now_iso(), source=result["meta"]["data_source"]
+        _conn, result, ts=ts, source=result["meta"]["data_source"]
     )
     store.prune(_conn)
+
+    # Evaluate alert rules against the fresh (trend-annotated) scan.
+    store.annotate_trend(_conn, result, baseline=baseline)
+    rules = store.list_rules(_conn, enabled_only=True)
+    triggers = alerts.evaluate_scan(rules, result)
+    store.record_events(_conn, triggers, ts=ts)
+    delivered = notify.deliver(triggers, ts=ts)
+
     return JSONResponse(
         {
             "recorded_snapshot_id": snap_id,
             "assets_recorded": len(result["assets"]),
             "compared_against_prior": bool(baseline),
+            "alerts_triggered": len(triggers),
+            "alerts_delivered": delivered,
         }
     )
+
+
+class RuleIn(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    metric: str
+    op: str
+    threshold: float
+    enabled: bool = True
+
+
+@app.get("/api/alerts")
+def api_list_alerts() -> JSONResponse:
+    return JSONResponse(
+        {
+            "rules": store.list_rules(_conn),
+            "metrics": list(alerts.METRICS),
+            "ops": list(alerts.OPS),
+        }
+    )
+
+
+@app.post("/api/alerts")
+def api_create_alert(rule: RuleIn) -> JSONResponse:
+    try:
+        alerts.validate_rule(rule.metric, rule.op)
+    except alerts.RuleError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    created = store.add_rule(
+        _conn, rule.name, rule.metric, rule.op, rule.threshold, rule.enabled
+    )
+    return JSONResponse({"rule": created}, status_code=201)
+
+
+@app.delete("/api/alerts/{rule_id}")
+def api_delete_alert(rule_id: int) -> JSONResponse:
+    ok = store.delete_rule(_conn, rule_id)
+    if not ok:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return JSONResponse({"deleted": rule_id})
+
+
+@app.get("/api/alerts/events")
+def api_alert_events(limit: int = Query(100, ge=1, le=1000)) -> JSONResponse:
+    return JSONResponse({"events": store.list_events(_conn, limit=limit)})
 
 
 @app.get("/api/history/{base}")

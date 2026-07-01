@@ -85,6 +85,26 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
   display: inline-block; min-width: 42px; text-align: center; font-weight: 700;
   border-radius: 6px; padding: 2px 6px; background: var(--panel-2);
 }
+.alerts { padding: 24px; border-top: 1px solid var(--line); margin-top: 20px; }
+.alerts h2 { margin: 0 0 4px; font-size: 17px; }
+.alerts h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.alerts code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+.rule-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+.rule-form input, .rule-form select {
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+  border-radius: 8px; padding: 8px 10px;
+}
+.alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.rule-list, .event-list { list-style: none; padding: 0; margin: 8px 0; }
+.rule-list li, .event-list li {
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  margin-bottom: 6px; background: var(--panel); display: flex;
+  justify-content: space-between; align-items: center; gap: 10px;
+}
+.event-list li { display: block; }
+button.link { background: none; color: var(--red); padding: 2px 6px; font-weight: 700; }
+@media (max-width: 720px) { .alerts-grid { grid-template-columns: 1fr; } }
+
 footer { padding: 22px 24px 40px; color: var(--muted); font-size: 12px; max-width: 900px; }
 footer strong { color: var(--text); }
 @media (max-width: 720px) {

@@ -66,6 +66,10 @@ PERP_RADAR_DEMO=1 uvicorn app.main:app
 | `GET /api/snapshot` | Record a full scan into history. Call on a schedule to build trends. |
 | `GET /api/history/{base}` | Score/price time series for one asset (e.g. `/api/history/BTC`) |
 | `GET /api/asset/{base}` | Single asset detail + its history |
+| `GET /api/alerts` | List alert rules + valid metrics/operators |
+| `POST /api/alerts` | Create a rule `{name, metric, op, threshold, enabled}` |
+| `DELETE /api/alerts/{id}` | Delete a rule |
+| `GET /api/alerts/events` | Recent triggered alerts |
 
 Example:
 
@@ -109,13 +113,33 @@ click-to-expand **sparklines**.
 
   Old snapshots are pruned automatically (keeps the most recent ~2000).
 
+## Alerts
+
+Define rules like `radar_score >= 80`, `basis_bps <= -50`, or
+`abs_change_pct >= 10`. Each recorded snapshot evaluates all enabled rules and
+records the triggers; manage rules from the dashboard's Alerts panel or the API.
+
+Available metrics: `radar_score`, `score_delta`, `basis_bps`, `abs_basis_bps`,
+`change_pct`, `abs_change_pct`, `range_pct`, `volume_usd`.
+Operators: `>=`, `<=`, `>`, `<`.
+
+To push triggers to Discord/Slack/Telegram, set an incoming-webhook URL:
+
+```bash
+export PERP_RADAR_WEBHOOK_URL="https://discord.com/api/webhooks/…"
+```
+
+Delivery is a no-op when unset, so the app runs fine without any integration.
+
 ## Architecture
 
 ```
 app/
   analytics.py   Pure signal functions (no network/clock) — fully unit-tested
   sources.py     Live fetch (stdlib urllib) + TTL cache + offline fixture fallback
-  store.py       SQLite history store (snapshots, trends, sparklines) — tested
+  store.py       SQLite store: history snapshots + alert rules/events — tested
+  alerts.py      Pure alert-rule evaluation — tested
+  notify.py      Generic webhook delivery (Discord/Slack/Telegram/any)
   main.py        FastAPI: JSON API + static dashboard
   cli.py         Terminal scanner
   static/        Zero-build dashboard (HTML/CSS/vanilla JS)

@@ -78,9 +78,10 @@ $100k, and not guaranteed. Most of the outcome depends on distribution
 - [x] **MVP** — scanner, score, dashboard, API, CLI, tests
 - [x] **Historical storage + sparklines** (SQLite) so scores have trend — Δ score
       column, `/api/snapshot`, `/api/history/{base}`
+- [x] **Alerts** — rule engine + events + generic webhook delivery
+      (Discord/Slack/Telegram), managed from the dashboard or API
 - [ ] Multi-exchange data (add Binance/Bybit public APIs) for cross-exchange basis
 - [ ] User accounts + Stripe + the Pro tier gate
-- [ ] Alerts (Telegram bot is the cheapest, highest-retention channel)
 - [ ] Landing page + 1 piece of SEO content per week (the actual growth engine)
 - [ ] Public API with keys/quotas
 

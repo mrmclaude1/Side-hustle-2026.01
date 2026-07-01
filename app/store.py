@@ -61,6 +61,27 @@ def init_db(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_points_base ON asset_points(base);
         CREATE INDEX IF NOT EXISTS idx_points_snap ON asset_points(snapshot_id);
         CREATE INDEX IF NOT EXISTS idx_snap_ts ON snapshots(ts);
+
+        CREATE TABLE IF NOT EXISTS alert_rules (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            name      TEXT NOT NULL,
+            metric    TEXT NOT NULL,
+            op        TEXT NOT NULL,
+            threshold REAL NOT NULL,
+            enabled   INTEGER NOT NULL DEFAULT 1
+        );
+        CREATE TABLE IF NOT EXISTS alert_events (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts        TEXT NOT NULL,
+            rule_id   INTEGER,
+            rule_name TEXT,
+            base      TEXT,
+            metric    TEXT,
+            op        TEXT,
+            threshold REAL,
+            value     REAL
+        );
+        CREATE INDEX IF NOT EXISTS idx_events_ts ON alert_events(ts);
         """
     )
     conn.commit()
@@ -153,6 +174,88 @@ def annotate_trend(
             round(cur - p, 1) if (p is not None and cur is not None) else None
         )
     return scan_result
+
+
+# --- Alert rules & events -------------------------------------------------
+
+def add_rule(
+    conn: sqlite3.Connection,
+    name: str,
+    metric: str,
+    op: str,
+    threshold: float,
+    enabled: bool = True,
+) -> dict:
+    cur = conn.execute(
+        "INSERT INTO alert_rules (name, metric, op, threshold, enabled) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (name, metric, op, threshold, 1 if enabled else 0),
+    )
+    conn.commit()
+    return get_rule(conn, cur.lastrowid)
+
+
+def get_rule(conn: sqlite3.Connection, rule_id: int) -> Optional[dict]:
+    row = conn.execute("SELECT * FROM alert_rules WHERE id = ?", (rule_id,)).fetchone()
+    return _rule_to_dict(row) if row else None
+
+
+def list_rules(conn: sqlite3.Connection, enabled_only: bool = False) -> list[dict]:
+    q = "SELECT * FROM alert_rules"
+    if enabled_only:
+        q += " WHERE enabled = 1"
+    q += " ORDER BY id"
+    return [_rule_to_dict(r) for r in conn.execute(q).fetchall()]
+
+
+def set_rule_enabled(conn: sqlite3.Connection, rule_id: int, enabled: bool) -> bool:
+    cur = conn.execute(
+        "UPDATE alert_rules SET enabled = ? WHERE id = ?",
+        (1 if enabled else 0, rule_id),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def delete_rule(conn: sqlite3.Connection, rule_id: int) -> bool:
+    cur = conn.execute("DELETE FROM alert_rules WHERE id = ?", (rule_id,))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def _rule_to_dict(row: sqlite3.Row) -> dict:
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "metric": row["metric"],
+        "op": row["op"],
+        "threshold": row["threshold"],
+        "enabled": bool(row["enabled"]),
+    }
+
+
+def record_events(conn: sqlite3.Connection, triggers: list[dict], ts: str) -> int:
+    if not triggers:
+        return 0
+    conn.executemany(
+        "INSERT INTO alert_events "
+        "(ts, rule_id, rule_name, base, metric, op, threshold, value) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            (ts, t.get("rule_id"), t.get("rule_name"), t.get("base"),
+             t.get("metric"), t.get("op"), t.get("threshold"), t.get("value"))
+            for t in triggers
+        ],
+    )
+    conn.commit()
+    return len(triggers)
+
+
+def list_events(conn: sqlite3.Connection, limit: int = 100) -> list[dict]:
+    rows = conn.execute(
+        "SELECT * FROM alert_events ORDER BY id DESC LIMIT ?", (limit,)
+    ).fetchall()
+    return [dict(r) for r in rows]
 
 
 def prune(conn: sqlite3.Connection, keep_snapshots: int = 2000) -> int:

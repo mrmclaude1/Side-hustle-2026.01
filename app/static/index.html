@@ -59,6 +59,32 @@
     <tbody id="rows"></tbody>
   </table>
 
+  <section class="alerts" id="alerts">
+    <h2>Alerts</h2>
+    <p class="muted">
+      Rules are checked every time a snapshot is recorded
+      (<code>GET /api/snapshot</code>, run on a schedule). Set
+      <code>PERP_RADAR_WEBHOOK_URL</code> to push triggers to Discord/Slack/Telegram.
+    </p>
+    <form id="rule-form" class="rule-form">
+      <input id="rule-name" placeholder="Rule name" required />
+      <select id="rule-metric"></select>
+      <select id="rule-op"></select>
+      <input id="rule-threshold" type="number" step="any" placeholder="Threshold" required />
+      <button type="submit">Add rule</button>
+    </form>
+    <div class="alerts-grid">
+      <div>
+        <h3>Active rules</h3>
+        <ul id="rule-list" class="rule-list"><li class="muted">None yet.</li></ul>
+      </div>
+      <div>
+        <h3>Recent triggers</h3>
+        <ul id="event-list" class="event-list"><li class="muted">None yet.</li></ul>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <p>
       Data: Crypto.com public API. <strong>Educational analytics only — not
