@@ -4,7 +4,7 @@ bundled fixture (no network, no on-disk DB file)."""
 
 import os
 
-os.environ.setdefault("BASICPULSE_DB", ":memory:")
-os.environ.setdefault("BASICPULSE_DEMO", "1")
-os.environ.setdefault("BASICPULSE_DISABLE_RATELIMIT", "1")
-os.environ.setdefault("BASICPULSE_ADMIN_TOKEN", "test-admin")
+os.environ.setdefault("BASISPULSE_DB", ":memory:")
+os.environ.setdefault("BASISPULSE_DEMO", "1")
+os.environ.setdefault("BASISPULSE_DISABLE_RATELIMIT", "1")
+os.environ.setdefault("BASISPULSE_ADMIN_TOKEN", "test-admin")

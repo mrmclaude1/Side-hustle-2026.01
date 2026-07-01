@@ -66,7 +66,7 @@ def normalized(
 
 def fetch_json(url: str, timeout: float = 10.0):
     req = urllib.request.Request(
-        url, headers={"User-Agent": "basicpulse/0.1 (+https://github.com)"}
+        url, headers={"User-Agent": "basispulse/0.1 (+https://github.com)"}
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))

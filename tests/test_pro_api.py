@@ -1,5 +1,5 @@
 """Pro-tier API: gating, key provisioning, and the billing webhook end-to-end.
-conftest sets BASICPULSE_ADMIN_TOKEN=test-admin and disables rate limiting."""
+conftest sets BASISPULSE_ADMIN_TOKEN=test-admin and disables rate limiting."""
 
 import json
 

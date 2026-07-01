@@ -4,7 +4,7 @@ Run locally:
     uvicorn app.main:app --reload
 Then open http://127.0.0.1:8000
 
-History: set BASICPULSE_DB to a file path (default: basicpulse.db) to persist
+History: set BASISPULSE_DB to a file path (default: basispulse.db) to persist
 scan snapshots and unlock score trends + sparklines. Set it to ":memory:" to
 disable on-disk persistence. A scheduled GET /api/snapshot records one point;
 run it periodically (cron) to build history.
@@ -31,10 +31,10 @@ from . import (
 )
 from .exchanges import ADAPTERS, DEFAULT_EXCHANGES
 
-app = FastAPI(title="BasicPulse", version=__version__)
+app = FastAPI(title="BasisPulse", version=__version__)
 
 _STATIC = Path(__file__).parent / "static"
-_DB_PATH = os.environ.get("BASICPULSE_DB", "basicpulse.db")
+_DB_PATH = os.environ.get("BASISPULSE_DB", "basispulse.db")
 
 # One shared connection. check_same_thread=False is safe here because writes are
 # small, serialised by SQLite's own locking, and the app is IO-light.
@@ -63,7 +63,7 @@ def caller(
         raise HTTPException(status_code=401, detail="invalid API key")
     plan = store.resolve_plan(_conn, key) or access.DEFAULT_PLAN
     identity = key or (request.client.host if request.client else "anon")
-    if os.environ.get("BASICPULSE_DISABLE_RATELIMIT") != "1":
+    if os.environ.get("BASISPULSE_DISABLE_RATELIMIT") != "1":
         limit = access.plan_config(plan)["rate_per_min"]
         if not _rate.allow(identity, limit, time.time()):
             raise HTTPException(status_code=429, detail="rate limit exceeded")
@@ -119,9 +119,9 @@ def api_pricing() -> JSONResponse:
                 }
                 for name, cfg in access.PLANS.items()
             },
-            # Set BASICPULSE_CHECKOUT_URL to your Stripe Checkout link to wire
+            # Set BASISPULSE_CHECKOUT_URL to your Stripe Checkout link to wire
             # the landing page's "Get Pro" button. Empty until configured.
-            "checkout_url": os.environ.get("BASICPULSE_CHECKOUT_URL", "").strip(),
+            "checkout_url": os.environ.get("BASISPULSE_CHECKOUT_URL", "").strip(),
         }
     )
 
@@ -297,8 +297,8 @@ def api_create_key(
     body: KeyIn, x_admin_token: Optional[str] = Header(default=None)
 ) -> JSONResponse:
     """Provision an API key. Self-service yields a free key; supplying a valid
-    admin token (BASICPULSE_ADMIN_TOKEN) allows minting Pro keys (comps/manual)."""
-    admin = os.environ.get("BASICPULSE_ADMIN_TOKEN", "").strip()
+    admin token (BASISPULSE_ADMIN_TOKEN) allows minting Pro keys (comps/manual)."""
+    admin = os.environ.get("BASISPULSE_ADMIN_TOKEN", "").strip()
     is_admin = bool(admin) and x_admin_token == admin
     plan = body.plan if (is_admin and body.plan in access.PLANS) else "free"
     rec = store.create_key(

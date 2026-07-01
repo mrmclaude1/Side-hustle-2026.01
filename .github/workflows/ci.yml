@@ -17,5 +17,5 @@ jobs:
         run: pip install -r requirements-dev.txt
       - name: Run tests (offline, fixture-backed)
         env:
-          BASICPULSE_DEMO: "1"
+          BASISPULSE_DEMO: "1"
         run: pytest -q

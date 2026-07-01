@@ -60,7 +60,7 @@ def test_landing_dashboard_and_static():
     # "/" is the marketing landing page; the app lives at "/app".
     landing = client.get("/")
     assert landing.status_code == 200
-    assert "BasicPulse" in landing.text and "Pricing" in landing.text
+    assert "BasisPulse" in landing.text and "Pricing" in landing.text
     app_page = client.get("/app")
     assert app_page.status_code == 200 and 'id="cross"' in app_page.text
     assert client.get("/static/app.js").status_code == 200
@@ -69,7 +69,7 @@ def test_landing_dashboard_and_static():
 
 def test_pricing_exposes_checkout_url_field():
     body = client.get("/api/pricing").json()
-    assert "checkout_url" in body  # empty until BASICPULSE_CHECKOUT_URL is set
+    assert "checkout_url" in body  # empty until BASISPULSE_CHECKOUT_URL is set
 
 
 def test_alert_rule_crud_and_validation():
