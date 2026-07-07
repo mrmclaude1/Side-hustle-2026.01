@@ -9,7 +9,9 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BasisPulse — crypto market-structure scanner" />
   <meta property="og:description" content="One scan across hundreds of markets: perp/spot basis, momentum, volatility, liquidity, cross-exchange arb, trends and alerts." />
+  <meta property="og:image" content="/static/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="/static/og.png" />
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="/static/landing.css" />
   <script type="application/ld+json">
@@ -22,7 +24,20 @@
     "description": "Crypto market-structure scanner: perp/spot basis, momentum, volatility, liquidity, cross-exchange dislocation, trends, alerts and a JSON API.",
     "offers": [
       {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD"},
-      {"@type": "Offer", "name": "Pro", "priceCurrency": "USD"}
+      {"@type": "Offer", "name": "Pro", "price": "19", "priceCurrency": "USD"}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "What is \"basis\"?", "acceptedAnswer": {"@type": "Answer", "text": "The gap between a perpetual future's price and spot. Persistent positive basis means longs are paying to hold (crowded-long); negative means shorts are paying. It's a widely-watched market-structure indicator."}},
+      {"@type": "Question", "name": "Where does the data come from?", "acceptedAnswer": {"@type": "Answer", "text": "Public exchange APIs (Crypto.com, Binance, Bybit). No account or key is needed to use the free dashboard."}},
+      {"@type": "Question", "name": "Do you offer an API?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — a JSON API with free and Pro keys, per-plan rate limits, premium signals and CSV export."}},
+      {"@type": "Question", "name": "Can I self-host?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. It's a small FastAPI app with a Dockerfile; the whole thing runs offline against a bundled snapshot if needed."}},
+      {"@type": "Question", "name": "Is this financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. BasisPulse is an analytics tool. The Radar Score ranks how unusual a market looks right now; it does not predict returns. Crypto is volatile and you can lose everything."}}
     ]
   }
   </script>
@@ -52,6 +67,23 @@
       <a class="btn btn-primary" href="/app">Open the live scanner →</a>
       <a class="btn btn-ghost" id="hero-pro" href="#pricing">Get Pro</a>
     </div>
+    <p class="micro reassure">Free · no sign-up · live data from Crypto.com, Binance &amp; Bybit</p>
+
+    <a href="/app" class="hero-preview" aria-label="Open the full scanner">
+      <table>
+        <thead><tr><th class="num">Score</th><th>Asset</th><th class="num">24h %</th><th class="num">Basis (bps)</th></tr></thead>
+        <tbody id="preview-rows">
+          <!-- Static fallback rows; replaced by live data when JS runs. -->
+          <tr><td class="num"><span class="p-score">99.4</span></td><td><strong>BASED</strong> <span class="p-badge">PERP</span></td><td class="num pos">+20.88%</td><td class="num neg">-90.7</td></tr>
+          <tr><td class="num"><span class="p-score">96.6</span></td><td><strong>AIGENSYN</strong></td><td class="num pos">+26.58%</td><td class="num pos">+72.0</td></tr>
+          <tr><td class="num"><span class="p-score">66.2</span></td><td><strong>CRCL</strong> <span class="p-badge">PERP</span></td><td class="num neg">-17.25%</td><td class="num">—</td></tr>
+          <tr><td class="num"><span class="p-score">64.0</span></td><td><strong>ORDI</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.00%</td><td class="num pos">+57.9</td></tr>
+          <tr><td class="num"><span class="p-score">61.4</span></td><td><strong>GRT</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.73%</td><td class="num neg">-320.3</td></tr>
+        </tbody>
+      </table>
+      <span class="preview-cta">See the full scan →</span>
+    </a>
+
     <p class="micro" id="live-stat">Live snapshot loading…</p>
     <p class="micro disclaimer">Educational analytics — not investment advice. Crypto is volatile; you can lose your entire stake.</p>
   </header>
@@ -59,12 +91,12 @@
   <section id="features" class="lp-section">
     <h2>What it surfaces</h2>
     <div class="feature-grid">
-      <div class="feature"><h3>◎ Radar Score</h3><p>A transparent 0–100 rank blending momentum, basis, volatility and liquidity — fully auditable, no black box.</p></div>
-      <div class="feature"><h3>⇅ Perp/spot basis</h3><p>Where perpetuals trade above or below spot — a real read on crowded positioning and funding pressure.</p></div>
-      <div class="feature"><h3>↗ Trends &amp; sparklines</h3><p>Scores are stored over time, so a <em>rising</em> score is the signal — not a noisy snapshot.</p></div>
-      <div class="feature"><h3>🔀 Cross-exchange</h3><p>The same asset priced across Crypto.com, Binance &amp; Bybit — spot dispersion and crossed-book arb edge.</p></div>
-      <div class="feature"><h3>🚨 Alerts</h3><p>Rules like <code>basis ≤ −50bps</code> or <code>score ≥ 80</code>, pushed to Discord/Slack/Telegram.</p></div>
-      <div class="feature"><h3>{ } JSON API</h3><p>Every signal via a clean API with keys, plans and rate limits — build on top of it.</p></div>
+      <div class="feature"><h3><span class="f-icon">◎</span>Radar Score</h3><p>A transparent 0–100 rank blending momentum, basis, volatility and liquidity — fully auditable, no black box.</p></div>
+      <div class="feature"><h3><span class="f-icon">⇅</span>Perp/spot basis</h3><p>Where perpetuals trade above or below spot — a real read on crowded positioning and funding pressure.</p></div>
+      <div class="feature"><h3><span class="f-icon">↗</span>Trends &amp; sparklines</h3><p>Scores are stored over time, so a <em>rising</em> score is the signal — not a noisy snapshot.</p></div>
+      <div class="feature"><h3><span class="f-icon">⇄</span>Cross-exchange</h3><p>The same asset priced across Crypto.com, Binance &amp; Bybit — spot dispersion and crossed-book arb edge.</p></div>
+      <div class="feature"><h3><span class="f-icon">⚑</span>Alerts</h3><p>Rules like <code>basis ≤ −50bps</code> or <code>score ≥ 80</code>, pushed to Discord/Slack/Telegram.</p></div>
+      <div class="feature"><h3><span class="f-icon">{ }</span>JSON API</h3><p>Every signal via a clean API with keys, plans and rate limits — build on top of it.</p></div>
     </div>
   </section>
 
@@ -72,16 +104,16 @@
     <h2>Pricing</h2>
     <p class="section-sub">The dashboard is free forever. Upgrade for depth, premium signals, exports and unlimited alerts.</p>
     <div id="lp-pricing" class="pricing-grid lp-pricing"><!-- filled by JS --></div>
-    <p class="micro">Prices shown on the checkout page. API access uses the <code>X-API-Key</code> header.</p>
+    <p class="micro">API access uses the <code>X-API-Key</code> header.</p>
   </section>
 
   <section id="faq" class="lp-section">
     <h2>FAQ</h2>
-    <details><summary>Is this financial advice?</summary><p>No. BasisPulse is an analytics tool. The Radar Score ranks how <em>unusual</em> a market looks right now; it does not predict returns. Crypto is volatile and you can lose everything.</p></details>
+    <details open><summary>What is "basis"?</summary><p>The gap between a perpetual future's price and spot. Persistent positive basis means longs are paying to hold (crowded-long); negative means shorts are paying. It's a widely-watched market-structure indicator.</p></details>
     <details><summary>Where does the data come from?</summary><p>Public exchange APIs (Crypto.com, Binance, Bybit). No account or key is needed to use the free dashboard.</p></details>
-    <details><summary>What is "basis"?</summary><p>The gap between a perpetual future's price and spot. Persistent positive basis means longs are paying to hold (crowded-long); negative means shorts are paying. It's a widely-watched market-structure indicator.</p></details>
     <details><summary>Do you offer an API?</summary><p>Yes — a JSON API with free and Pro keys, per-plan rate limits, premium signals and CSV export.</p></details>
     <details><summary>Can I self-host?</summary><p>Yes. It's a small FastAPI app with a Dockerfile; the whole thing runs offline against a bundled snapshot if needed.</p></details>
+    <details><summary>Is this financial advice?</summary><p>No. BasisPulse is an analytics tool. The Radar Score ranks how <em>unusual</em> a market looks right now; it does not predict returns. Crypto is volatile and you can lose everything.</p></details>
   </section>
 
   <footer class="lp-footer">

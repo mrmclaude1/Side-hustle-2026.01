@@ -20,6 +20,8 @@ def _mint_pro_key() -> str:
 def test_pricing_and_me():
     pricing = client.get("/api/pricing").json()["plans"]
     assert "free" in pricing and "pro" in pricing
+    # Pro card price is surfaced for the landing/dashboard pricing cards.
+    assert pricing["pro"]["price_usd_month"]
     me = client.get("/api/me").json()
     assert me["plan"] == "free" and me["authenticated"] is False
 

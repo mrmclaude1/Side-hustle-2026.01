@@ -16,6 +16,12 @@
         <p class="tag">Perp/spot basis · momentum · volatility · liquidity — one scan.</p>
       </div>
     </a>
+    <nav class="section-nav" aria-label="Sections">
+      <a href="#scan">Scan</a>
+      <a href="#cross">Cross-exchange</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#pro">Pro</a>
+    </nav>
     <div class="status">
       <span id="plan-pill" class="pill" title="Your plan">plan: …</span>
       <span id="source-pill" class="pill">…</span>
@@ -25,9 +31,12 @@
 
   <section class="summary" id="summary"><!-- filled by JS --></section>
 
-  <section class="controls">
+  <section class="controls" id="scan">
+    <label>Search
+      <input id="search" type="search" placeholder="e.g. BTC" autocomplete="off" />
+    </label>
     <label>Min 24h volume (USD)
-      <input id="min-volume" type="number" min="0" step="100000" value="0" />
+      <input id="min-volume" type="number" min="0" step="100000" value="0" placeholder="e.g. 1000000" />
     </label>
     <label>Show
       <select id="limit">
@@ -42,33 +51,29 @@
     <span class="muted" id="updated"></span>
   </section>
 
-  <table id="grid">
-    <thead>
-      <tr>
-        <th data-k="radar_score" class="num sorted">Score</th>
-        <th data-k="score_delta" class="num">Δ</th>
-        <th data-k="base">Asset</th>
-        <th data-k="price" class="num">Price</th>
-        <th data-k="change_pct" class="num">24h %</th>
-        <th data-k="basis_bps" class="num">Basis (bps)</th>
-        <th data-k="range_pct" class="num">Range %</th>
-        <th data-k="spread_bps" class="num">Spread (bps)</th>
-        <th data-k="open_interest" class="num">Open Interest</th>
-        <th data-k="volume_usd" class="num">Volume (USD)</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
+  <p class="hint muted">Click a column to sort · click a row for its score history sparkline.</p>
 
-  <section class="pro" id="pro">
-    <h2>Pro</h2>
-    <p class="muted">
-      The dashboard is free. Pro unlocks deeper scans, cross-exchange &amp;
-      premium signals via API, CSV export, and unlimited alerts. Bring an API
-      key with the <code>X-API-Key</code> header (or <code>?api_key=</code>).
-    </p>
-    <div id="pricing-grid" class="pricing-grid"></div>
-  </section>
+  <div class="table-wrap">
+    <table id="grid">
+      <thead>
+        <tr>
+          <th data-k="radar_score" class="num sorted" title="0–100 notability rank blending momentum, basis, volatility and liquidity">Score</th>
+          <th data-k="score_delta" class="num" title="Score change vs the previous recorded snapshot">Δ</th>
+          <th data-k="base">Asset</th>
+          <th data-k="price" class="num">Price</th>
+          <th data-k="change_pct" class="num" title="24-hour price change">24h %</th>
+          <th data-k="basis_bps" class="num" title="Perp price vs spot price, in basis points. Positive = perp above spot (crowded long)">Basis (bps)</th>
+          <th data-k="range_pct" class="num" title="Intraday high-low range as % of price — a volatility proxy">Range %</th>
+          <th data-k="spread_bps" class="num" title="Bid/ask spread in basis points — lower = more liquid">Spread (bps)</th>
+          <th data-k="open_interest" class="num" title="Outstanding perp contracts">Open Interest</th>
+          <th data-k="volume_usd" class="num" title="24h traded volume in USD">Volume</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr class="state-row"><td colspan="10">Loading market data…</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <section class="cross" id="cross">
     <h2>Cross-Exchange dislocation</h2>
@@ -78,34 +83,37 @@
       means the best bid on one venue exceeds the best ask on another (crossed
       book, before fees/withdrawal limits).
     </p>
-    <table id="cross-grid">
-      <thead>
-        <tr>
-          <th class="num">Spread (bps)</th>
-          <th>Asset</th>
-          <th>Venues</th>
-          <th class="num">Ref price</th>
-          <th class="num">Arb edge (bps)</th>
-          <th>Buy → Sell</th>
-          <th class="num">Volume (USD)</th>
-        </tr>
-      </thead>
-      <tbody id="cross-rows"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table id="cross-grid">
+        <thead>
+          <tr>
+            <th class="num" title="Price gap between venues, in basis points">Spread (bps)</th>
+            <th>Asset</th>
+            <th>Venues</th>
+            <th class="num">Ref price</th>
+            <th class="num" title="Best bid minus best ask across venues; positive = crossed book">Arb edge (bps)</th>
+            <th>Buy → Sell</th>
+            <th class="num">Volume</th>
+          </tr>
+        </thead>
+        <tbody id="cross-rows"></tbody>
+      </table>
+    </div>
   </section>
 
   <section class="alerts" id="alerts">
     <h2>Alerts</h2>
     <p class="muted">
-      Rules are checked every time a snapshot is recorded
-      (<code>GET /api/snapshot</code>, run on a schedule). Set
-      <code>BASISPULSE_WEBHOOK_URL</code> to push triggers to Discord/Slack/Telegram.
+      Get notified when any asset crosses your threshold — e.g.
+      <code>basis_bps ≤ −50</code> or <code>radar_score ≥ 80</code>. Triggers can
+      be pushed to Discord, Slack or Telegram.
+      <span class="muted" title="Rules are evaluated every time a snapshot is recorded (GET /api/snapshot, run on a schedule). Set BASISPULSE_WEBHOOK_URL to enable push delivery.">(how it works)</span>
     </p>
     <form id="rule-form" class="rule-form">
-      <input id="rule-name" placeholder="Rule name" required />
-      <select id="rule-metric"></select>
-      <select id="rule-op"></select>
-      <input id="rule-threshold" type="number" step="any" placeholder="Threshold" required />
+      <input id="rule-name" placeholder="Rule name" aria-label="Rule name" required />
+      <select id="rule-metric" aria-label="Metric"></select>
+      <select id="rule-op" aria-label="Comparison"></select>
+      <input id="rule-threshold" type="number" step="any" placeholder="Threshold" aria-label="Threshold" required />
       <button type="submit">Add rule</button>
     </form>
     <div class="alerts-grid">
@@ -120,12 +128,21 @@
     </div>
   </section>
 
+  <section class="pro" id="pro">
+    <h2>Pro</h2>
+    <p class="muted">
+      The dashboard is free. Pro unlocks deeper scans, premium signals via API,
+      CSV export, and unlimited alerts. Bring an API key with the
+      <code>X-API-Key</code> header (or <code>?api_key=</code>).
+    </p>
+    <div id="pricing-grid" class="pricing-grid"></div>
+  </section>
+
   <footer>
     <p>
       Data: Crypto.com public API. <strong>Educational analytics only — not
       investment advice.</strong> Scores rank how <em>unusual</em> an asset
-      looks now; they do not predict returns. Click a row to see its score
-      sparkline across recorded snapshots. Crypto is volatile and you can
+      looks now; they do not predict returns. Crypto is volatile and you can
       lose your entire stake.
     </p>
   </footer>

@@ -108,17 +108,21 @@ def _run_scan(
 
 @app.get("/api/pricing")
 def api_pricing() -> JSONResponse:
+    pro_price = os.environ.get("BASISPULSE_PRO_PRICE", "19").strip()
+    plans = {
+        name: {
+            "rate_per_min": cfg["rate_per_min"],
+            "max_scan_limit": cfg["max_scan_limit"],
+            "max_alert_rules": cfg["max_rules"],
+            "features": sorted(cfg["features"]),
+        }
+        for name, cfg in access.PLANS.items()
+    }
+    if "pro" in plans:
+        plans["pro"]["price_usd_month"] = pro_price
     return JSONResponse(
         {
-            "plans": {
-                name: {
-                    "rate_per_min": cfg["rate_per_min"],
-                    "max_scan_limit": cfg["max_scan_limit"],
-                    "max_alert_rules": cfg["max_rules"],
-                    "features": sorted(cfg["features"]),
-                }
-                for name, cfg in access.PLANS.items()
-            },
+            "plans": plans,
             # Set BASISPULSE_CHECKOUT_URL to your Stripe Checkout link to wire
             # the landing page's "Get Pro" button. Empty until configured.
             "checkout_url": os.environ.get("BASISPULSE_CHECKOUT_URL", "").strip(),

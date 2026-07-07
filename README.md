@@ -65,7 +65,7 @@ BASISPULSE_DEMO=1 uvicorn app.main:app
 
 | Endpoint | Description |
 |---|---|
-| `GET /` | Dashboard UI |
+| `GET /` | Landing page (`/app` is the dashboard) |
 | `GET /api/health` | Liveness + data source + history size |
 | `GET /api/scan?min_volume_usd=&limit=&quote=USD&demo=` | Ranked, scored assets + market summary (each asset includes `score_delta` vs the last snapshot) |
 | `GET /api/snapshot` | Record a full scan into history. Call on a schedule to build trends. |
