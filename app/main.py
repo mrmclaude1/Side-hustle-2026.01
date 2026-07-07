@@ -21,7 +21,9 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import (
+    FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -372,8 +374,15 @@ def api_asset(base: str, demo: bool = False) -> JSONResponse:
 
 
 @app.get("/")
-def landing() -> FileResponse:
-    return FileResponse(_STATIC / "landing.html")
+def landing(request: Request) -> HTMLResponse:
+    # OG/Twitter scrapers require absolute URLs, so template the request host
+    # into the share metadata and canonical link.
+    base = str(request.base_url)  # e.g. "https://basispulse.example.com/"
+    html = (_STATIC / "landing.html").read_text(encoding="utf-8")
+    html = html.replace('content="/static/og.png"', f'content="{base}static/og.png"')
+    html = html.replace('<link rel="canonical" href="/" />',
+                        f'<link rel="canonical" href="{base}" />')
+    return HTMLResponse(html)
 
 
 @app.get("/app")

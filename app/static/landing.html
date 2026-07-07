@@ -6,6 +6,8 @@
   <title>BasisPulse — crypto market-structure scanner (basis, funding pressure, cross-exchange arb)</title>
   <meta name="description" content="BasisPulse scans hundreds of crypto markets and ranks them by perp/spot basis, momentum, volatility, liquidity and cross-exchange dislocation — with trends, alerts and a JSON API." />
   <link rel="canonical" href="/" />
+  <meta name="theme-color" content="#0b0e14" />
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BasisPulse — crypto market-structure scanner" />
   <meta property="og:description" content="One scan across hundreds of markets: perp/spot basis, momentum, volatility, liquidity, cross-exchange arb, trends and alerts." />
@@ -74,11 +76,11 @@
         <thead><tr><th class="num">Score</th><th>Asset</th><th class="num">24h %</th><th class="num">Basis (bps)</th></tr></thead>
         <tbody id="preview-rows">
           <!-- Static fallback rows; replaced by live data when JS runs. -->
-          <tr><td class="num"><span class="p-score">99.4</span></td><td><strong>BASED</strong> <span class="p-badge">PERP</span></td><td class="num pos">+20.88%</td><td class="num neg">-90.7</td></tr>
-          <tr><td class="num"><span class="p-score">96.6</span></td><td><strong>AIGENSYN</strong></td><td class="num pos">+26.58%</td><td class="num pos">+72.0</td></tr>
-          <tr><td class="num"><span class="p-score">66.2</span></td><td><strong>CRCL</strong> <span class="p-badge">PERP</span></td><td class="num neg">-17.25%</td><td class="num">—</td></tr>
-          <tr><td class="num"><span class="p-score">64.0</span></td><td><strong>ORDI</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.00%</td><td class="num pos">+57.9</td></tr>
-          <tr><td class="num"><span class="p-score">61.4</span></td><td><strong>GRT</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.73%</td><td class="num neg">-320.3</td></tr>
+          <tr><td class="num"><span class="p-score"><i style="width:99%"></i><b>99.4</b></span></td><td><strong>BASED</strong> <span class="p-badge">PERP</span></td><td class="num pos">+20.88%</td><td class="num neg">-90.7</td></tr>
+          <tr><td class="num"><span class="p-score"><i style="width:97%"></i><b>96.6</b></span></td><td><strong>AIGENSYN</strong></td><td class="num pos">+26.58%</td><td class="num pos">+72.0</td></tr>
+          <tr><td class="num"><span class="p-score"><i style="width:66%"></i><b>66.2</b></span></td><td><strong>CRCL</strong> <span class="p-badge">PERP</span></td><td class="num neg">-17.25%</td><td class="num">—</td></tr>
+          <tr><td class="num"><span class="p-score"><i style="width:64%"></i><b>64.0</b></span></td><td><strong>ORDI</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.00%</td><td class="num pos">+57.9</td></tr>
+          <tr><td class="num"><span class="p-score"><i style="width:61%"></i><b>61.4</b></span></td><td><strong>GRT</strong> <span class="p-badge">PERP</span></td><td class="num neg">-4.73%</td><td class="num neg">-320.3</td></tr>
         </tbody>
       </table>
       <span class="preview-cta">See the full scan →</span>
@@ -111,7 +113,7 @@
     <h2>FAQ</h2>
     <details open><summary>What is "basis"?</summary><p>The gap between a perpetual future's price and spot. Persistent positive basis means longs are paying to hold (crowded-long); negative means shorts are paying. It's a widely-watched market-structure indicator.</p></details>
     <details><summary>Where does the data come from?</summary><p>Public exchange APIs (Crypto.com, Binance, Bybit). No account or key is needed to use the free dashboard.</p></details>
-    <details><summary>Do you offer an API?</summary><p>Yes — a JSON API with free and Pro keys, per-plan rate limits, premium signals and CSV export.</p></details>
+    <details><summary>Do you offer an API?</summary><p>Yes — a JSON API with free and Pro keys, per-plan rate limits, premium signals and CSV export. Plans and limits are published at <code>GET /api/pricing</code>.</p></details>
     <details><summary>Can I self-host?</summary><p>Yes. It's a small FastAPI app with a Dockerfile; the whole thing runs offline against a bundled snapshot if needed.</p></details>
     <details><summary>Is this financial advice?</summary><p>No. BasisPulse is an analytics tool. The Radar Score ranks how <em>unusual</em> a market looks right now; it does not predict returns. Crypto is volatile and you can lose everything.</p></details>
   </section>
@@ -120,7 +122,7 @@
     <div><span class="logo">◎</span> <strong>BasisPulse</strong></div>
     <div class="lp-footer-links">
       <a href="/app">Scanner</a>
-      <a href="/api/pricing">API pricing</a>
+      <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
     </div>
     <p class="micro">© BasisPulse. Educational analytics only — not investment advice.</p>

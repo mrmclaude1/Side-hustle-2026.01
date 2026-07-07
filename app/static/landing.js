@@ -7,6 +7,11 @@ const PRO_FEATURES = {
   export: "CSV export",
 };
 
+// Escape API-derived strings before innerHTML interpolation.
+const esc = (s) =>
+  String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
 function fmtCompact(n) {
   const a = Math.abs(n);
   if (a >= 1e9) return (n / 1e9).toFixed(1) + "B";
@@ -51,8 +56,8 @@ function renderPreview(assets) {
   if (!tbody || !assets || !assets.length) return;
   tbody.innerHTML = assets.slice(0, 5).map((a) => `
     <tr>
-      <td class="num"><span class="p-score">${a.radar_score.toFixed(1)}</span></td>
-      <td><strong>${a.base}</strong>${a.has_perp ? ' <span class="p-badge">PERP</span>' : ""}</td>
+      <td class="num"><span class="p-score"><i style="width:${Math.max(0, Math.min(100, a.radar_score))}%"></i><b>${a.radar_score.toFixed(1)}</b></span></td>
+      <td><strong>${esc(a.base)}</strong>${a.has_perp ? ' <span class="p-badge">PERP</span>' : ""}</td>
       <td class="num ${signedClass(a.change_pct)}">${fmtPct(a.change_pct)}</td>
       <td class="num ${signedClass(a.basis_bps)}">${a.basis_bps === null || a.basis_bps === undefined ? "—" : (a.basis_bps > 0 ? "+" : "") + a.basis_bps.toFixed(1)}</td>
     </tr>`).join("");
@@ -72,12 +77,12 @@ function planCard(name, p, checkoutUrl) {
     }
   }
   const price = isPro
-    ? `<div class="price">$${p.price_usd_month || "—"}<span>/mo</span></div>`
+    ? `<div class="price">$${esc(p.price_usd_month || "—")}<span>/mo</span></div>`
     : `<div class="price">$0<span> forever</span></div>`;
   const cta = isPro
     ? (checkoutUrl
-        ? `<a class="btn btn-primary cta" href="${checkoutUrl}" target="_blank" rel="noopener">Get Pro</a>`
-        : `<a class="btn btn-ghost cta" href="mailto:?subject=BasisPulse%20Pro">Coming soon — get notified</a>`)
+        ? `<a class="btn btn-primary cta" href="${esc(checkoutUrl)}" target="_blank" rel="noopener">Get Pro</a>`
+        : `<a class="btn btn-ghost cta" href="/app">Pro checkout opens soon — try the free scanner</a>`)
     : `<a class="btn btn-ghost cta" href="/app">Open free scanner</a>`;
   return `<div class="plan-card ${isPro ? "pro-card" : ""}">
     ${isPro ? '<span class="pop">MOST POPULAR</span>' : ""}

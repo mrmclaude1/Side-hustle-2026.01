@@ -12,6 +12,7 @@
   --red: #e66767;
   --accent: #3987e5;
   --amber: #c98500;
+  --header-h: 78px; /* JS keeps this in sync with the real header height */
 }
 * { box-sizing: border-box; }
 body {
@@ -20,10 +21,21 @@ body {
   color: var(--text);
   font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-html { scroll-behavior: smooth; }
-#scan, .cross, .alerts, .pro { scroll-margin-top: 84px; }
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+#scan, .cross, .alerts, .pro { scroll-margin-top: calc(var(--header-h) + 10px); }
 
-header {
+/* Visible keyboard focus everywhere on the dark theme. */
+:is(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scoped to the dashboard so landing.html's <header class="hero"> never
+   inherits sticky positioning from this file. */
+header.app-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap;
   padding: 14px 24px; border-bottom: 1px solid var(--line);
@@ -35,11 +47,12 @@ h1 { margin: 0; font-size: 20px; letter-spacing: .3px; }
 .tag { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 .section-nav { display: flex; gap: 18px; }
 .section-nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
-.section-nav a:hover { color: var(--accent); }
+.section-nav a:hover, .section-nav a.active { color: var(--accent); }
 .status { display: flex; align-items: center; gap: 12px; }
 .pill {
   padding: 4px 10px; border-radius: 999px; font-size: 12px;
   background: var(--panel-2); border: 1px solid var(--line); color: var(--muted);
+  text-decoration: none;
 }
 .pill.live { color: var(--green); border-color: #1f5c3a; }
 .pill.fixture { color: var(--amber); border-color: #5c4a1f; }
@@ -49,16 +62,18 @@ button {
 }
 button:hover { filter: brightness(1.08); }
 button:disabled { opacity: .55; cursor: wait; }
+button.ghost-btn { background: transparent; color: var(--muted); border: 1px solid var(--line); }
 a.plain { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--muted); }
 a.plain:hover { color: var(--accent); }
+.dim { color: var(--muted); opacity: .6; }
 
 .summary {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px; padding: 18px 24px;
 }
 .card {
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  padding: 14px 16px;
+  padding: 14px 16px; min-width: 0;
 }
 .card .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
 .card .v { font-size: 20px; font-weight: 700; margin-top: 4px; }
@@ -78,9 +93,14 @@ a.plain:hover { color: var(--accent); }
   background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
   border-radius: 8px; padding: 7px 9px; min-width: 120px;
 }
+.kbd-hint {
+  font-family: inherit; font-size: 10px; border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; color: var(--muted); margin-left: 2px;
+}
 .spacer { flex: 1; }
 .muted { color: var(--muted); font-size: 12px; }
 .hint { margin: 0 24px 8px; }
+.section-intro { max-width: 760px; font-size: 13px; }
 
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -94,22 +114,37 @@ thead th {
 #grid thead th[data-k]:hover { color: var(--text); }
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 th.sorted { color: var(--accent); }
-th.sorted::after { content: " ▼"; font-size: 9px; }
-th.sorted.asc::after { content: " ▲"; }
+/* Fixed-width caret box on every sortable header — no layout shift on sort. */
+#grid thead th[data-k]::after { content: ""; display: inline-block; width: 12px; font-size: 9px; }
+#grid thead th.sorted::after { content: "▼"; }
+#grid thead th.sorted.asc::after { content: "▲"; }
 tbody td { padding: 6px 12px; border-bottom: 1px solid #18202e; white-space: nowrap; font-size: 13px; }
 th:first-child, td:first-child { padding-left: 24px; }
 th:last-child, td:last-child { padding-right: 24px; }
 tbody tr.data-row { cursor: pointer; }
-tbody tr.data-row:hover, tbody tr.data-row:focus-visible { background: var(--panel); outline: none; }
+tbody tr.data-row:hover { background: var(--panel); }
+tbody tr.data-row:focus-visible {
+  background: var(--panel); outline: none;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+tbody tr.data-row.open { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent); }
 tr.state-row td { padding: 22px 24px; color: var(--muted); }
 tr.state-row.error td { color: var(--red); }
 tr.detail-row td.detail { background: var(--panel); padding: 14px 24px; color: var(--text); }
+@keyframes flash-row {
+  0% { background: rgba(57, 135, 229, .28); }
+  100% { background: transparent; }
+}
+tr.data-row.flash { animation: flash-row 1.6s ease-out; }
+.detail-charts { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 8px; }
+.mini-chart .mc-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.mini-chart .mc-label b { color: var(--text); font-variant-numeric: tabular-nums; }
 svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6px; padding: 4px; }
 .asset { font-weight: 700; }
 .badge { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; margin-left: 6px; }
 .pos { color: var(--green); }
 .neg { color: var(--red); }
-.delta-flat { color: var(--line); }
+.delta-flat { color: var(--muted); opacity: .7; }
 .score {
   position: relative; display: inline-block; width: 58px; text-align: center;
   border-radius: 6px; padding: 2px 6px; background: var(--panel-2); overflow: hidden;
@@ -126,6 +161,12 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
 
 .pro { padding: 24px; border-top: 1px solid var(--line); margin-top: 20px; }
 .pro h2 { margin: 0 0 4px; font-size: 17px; }
+.key-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0 4px; }
+.key-form input {
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+  border-radius: 8px; padding: 8px 10px; min-width: 240px;
+}
+#key-status.neg { color: var(--red); }
 .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 12px; }
 .plan-card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .plan-card.pro-card { border-color: var(--accent); }
@@ -137,6 +178,7 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
   color: #061018; font-size: 10px; font-weight: 700; letter-spacing: .5px;
   border-radius: 5px; padding: 2px 7px;
 }
+.plan-card .pop.current { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
 .plan-card ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 12.5px; }
 .btn-cta {
   display: block; text-align: center; margin-top: 14px; border-radius: 8px;
@@ -155,12 +197,14 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
 .alerts h2 { margin: 0 0 4px; font-size: 17px; }
 .alerts h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .alerts code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
-.rule-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+.rule-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
 .rule-form input, .rule-form select {
   background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
   border-radius: 8px; padding: 8px 10px;
 }
-.alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.rule-error { color: var(--red); font-size: 12.5px; margin: 6px 0 0; }
+.rule-error a { color: var(--accent); }
+.alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 12px; }
 .rule-list, .event-list { list-style: none; padding: 0; margin: 8px 0; max-height: 340px; overflow-y: auto; }
 .rule-list li, .event-list li {
   padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
@@ -168,19 +212,55 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
   justify-content: space-between; align-items: center; gap: 10px;
 }
 .event-list li { display: block; }
+.event-list a.locate { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+.event-list a.locate:hover { color: var(--accent); }
 button.link { background: none; color: var(--red); padding: 8px 10px; font-weight: 700; }
+button.link.confirm { background: var(--red); color: #0b0e14; border-radius: 6px; }
 
 footer { padding: 22px 24px 40px; color: var(--muted); font-size: 12px; max-width: 900px; }
 footer strong { color: var(--text); }
 
+/* Desktop: the 900px table never overflows, so let the page scroll and pin
+   the column headers under the app header. */
+@media (min-width: 960px) {
+  .table-wrap { overflow-x: visible; }
+  #grid thead th { position: sticky; top: var(--header-h); z-index: 3; }
+}
+
+@media (max-width: 1000px) {
+  .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 720px) {
   .tag { display: none; }
+  /* Static header on phones — sticky would eat ~140px of the viewport. */
+  header.app-header { position: static; }
+  #scan, .cross, .alerts, .pro { scroll-margin-top: 10px; }
   .section-nav { order: 3; width: 100%; justify-content: space-between; }
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* 16px inputs stop iOS Safari from zooming the page on focus. */
   .controls input, .controls select,
-  .rule-form input, .rule-form select { font-size: 16px; }
+  .rule-form input, .rule-form select, .key-form input { font-size: 16px; }
   .alerts-grid { grid-template-columns: 1fr; }
   .rule-form input, .rule-form select { flex: 1 1 45%; min-width: 0; }
   .rule-form input#rule-name { flex-basis: 100%; }
   .rule-form button { flex: 1 1 100%; }
+  /* Pin the Asset column while the rest of the table pans. */
+  #grid th:first-child, #grid td:first-child {
+    position: sticky; left: 0; z-index: 2; background: var(--bg);
+    box-shadow: 8px 0 8px -8px rgba(0, 0, 0, .6);
+  }
+  #grid tr.data-row:hover td:first-child,
+  #grid tr.data-row.open td:first-child { background: var(--panel); }
+}
+
+@media print {
+  :root {
+    --bg: #fff; --panel: #f4f6f8; --panel-2: #eceff3; --line: #c9d1da;
+    --text: #111; --muted: #555;
+  }
+  header.app-header { position: static; }
+  .status button, .controls, .rule-form, .key-form, .section-nav, .hint { display: none; }
+  table { min-width: 0; }
+  .score-fill { opacity: .35; }
 }

@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BasisPulse — crypto market scanner</title>
   <meta name="description" content="Live perpetual-vs-spot basis, momentum, volatility and liquidity scanner across crypto markets." />
+  <meta name="theme-color" content="#0b0e14" />
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <header>
+  <header class="app-header">
     <a class="brand" href="/" style="text-decoration:none;color:inherit;">
       <span class="logo">◎</span>
       <div>
@@ -23,7 +25,7 @@
       <a href="#pro">Pro</a>
     </nav>
     <div class="status">
-      <span id="plan-pill" class="pill" title="Your plan">plan: …</span>
+      <a id="plan-pill" class="pill" href="#pro" title="Your plan — manage in the Pro section">plan: …</a>
       <span id="source-pill" class="pill">…</span>
       <button id="refresh" title="Refresh now">↻ Refresh</button>
     </div>
@@ -32,7 +34,7 @@
   <section class="summary" id="summary"><!-- filled by JS --></section>
 
   <section class="controls" id="scan">
-    <label>Search
+    <label><span>Search <kbd class="kbd-hint">/</kbd></span>
       <input id="search" type="search" placeholder="e.g. BTC" autocomplete="off" />
     </label>
     <label>Min 24h volume (USD)
@@ -51,15 +53,15 @@
     <span class="muted" id="updated"></span>
   </section>
 
-  <p class="hint muted">Click a column to sort · click a row for its score history sparkline.</p>
+  <p class="hint muted">Click a column to sort · click a row for its history · hover column headers for definitions.</p>
 
   <div class="table-wrap">
     <table id="grid">
       <thead>
         <tr>
+          <th data-k="base">Asset</th>
           <th data-k="radar_score" class="num sorted" title="0–100 notability rank blending momentum, basis, volatility and liquidity">Score</th>
           <th data-k="score_delta" class="num" title="Score change vs the previous recorded snapshot">Δ</th>
-          <th data-k="base">Asset</th>
           <th data-k="price" class="num">Price</th>
           <th data-k="change_pct" class="num" title="24-hour price change">24h %</th>
           <th data-k="basis_bps" class="num" title="Perp price vs spot price, in basis points. Positive = perp above spot (crowded long)">Basis (bps)</th>
@@ -77,7 +79,7 @@
 
   <section class="cross" id="cross">
     <h2>Cross-Exchange dislocation</h2>
-    <p class="muted">
+    <p class="muted section-intro">
       Same asset, priced across <span id="cross-venues">multiple venues</span>.
       Wide <strong>spread</strong> = dislocation; a positive <strong>arb edge</strong>
       means the best bid on one venue exceeds the best ask on another (crossed
@@ -96,14 +98,16 @@
             <th class="num">Volume</th>
           </tr>
         </thead>
-        <tbody id="cross-rows"></tbody>
+        <tbody id="cross-rows">
+          <tr class="state-row"><td colspan="7">Loading cross-exchange data…</td></tr>
+        </tbody>
       </table>
     </div>
   </section>
 
   <section class="alerts" id="alerts">
     <h2>Alerts</h2>
-    <p class="muted">
+    <p class="muted section-intro">
       Get notified when any asset crosses your threshold — e.g.
       <code>basis_bps ≤ −50</code> or <code>radar_score ≥ 80</code>. Triggers can
       be pushed to Discord, Slack or Telegram.
@@ -116,6 +120,7 @@
       <input id="rule-threshold" type="number" step="any" placeholder="Threshold" aria-label="Threshold" required />
       <button type="submit">Add rule</button>
     </form>
+    <p id="rule-error" class="rule-error" role="alert" hidden></p>
     <div class="alerts-grid">
       <div>
         <h3>Active rules</h3>
@@ -130,11 +135,16 @@
 
   <section class="pro" id="pro">
     <h2>Pro</h2>
-    <p class="muted">
+    <p class="muted section-intro">
       The dashboard is free. Pro unlocks deeper scans, premium signals via API,
-      CSV export, and unlimited alerts. Bring an API key with the
-      <code>X-API-Key</code> header (or <code>?api_key=</code>).
+      CSV export, and unlimited alerts.
     </p>
+    <form id="key-form" class="key-form">
+      <input id="api-key" type="password" placeholder="Paste your API key (bp_…)" aria-label="API key" autocomplete="off" />
+      <button type="submit">Use key</button>
+      <button type="button" id="key-clear" class="ghost-btn" hidden>Clear key</button>
+      <span id="key-status" class="muted"></span>
+    </form>
     <div id="pricing-grid" class="pricing-grid"></div>
   </section>
 
