@@ -201,7 +201,9 @@ function renderRows() {
     $("#rows").innerHTML = rows
       .map((r) => {
         const base = esc(r.base);
-        const badge = r.has_perp ? '<span class="badge">PERP</span>' : "";
+        const badge = r.has_perp
+          ? '<span class="badge" title="Has a perpetual futures market — enables the Basis signal. No badge = spot only.">PERP</span>'
+          : "";
         const d = r.score_delta;
         const delta =
           d === null || d === undefined
