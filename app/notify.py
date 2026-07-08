@@ -26,11 +26,16 @@ def format_payload(triggers: list[dict], ts: str) -> dict:
         f"(value {t['value']}) [{t.get('rule_name')}]"
         for t in triggers
     ]
+    text = "🚨 BasisPulse alerts\n" + "\n".join(lines)
     return {
         "source": "basispulse",
         "ts": ts,
         "count": len(triggers),
-        "text": "🚨 BasisPulse alerts\n" + "\n".join(lines),
+        # "text" is Slack's message field; "content" is Discord's (capped at
+        # 2000 chars). Both are present so one payload works with either —
+        # each service ignores the other's field.
+        "text": text,
+        "content": text[:1990],
         "triggers": triggers,
     }
 
