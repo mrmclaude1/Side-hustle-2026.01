@@ -580,6 +580,25 @@ function clearKey() {
   loadPlan().then(loadPricing).then(load);
 }
 
+// --- "Start here" tour -------------------------------------------------------
+
+const TOUR_KEY = "basispulse_tour_seen";
+
+function openTour() {
+  const t = $("#tour");
+  if (!t) return;
+  t.hidden = false;
+  $("#tour-close")?.focus();
+}
+
+function closeTour() {
+  const t = $("#tour");
+  if (!t || t.hidden) return;
+  t.hidden = true;
+  localStorage.setItem(TOUR_KEY, "1");
+  $("#help")?.focus();
+}
+
 function setHeaderVar() {
   const h = document.querySelector("header.app-header");
   if (!h) return;
@@ -651,11 +670,18 @@ function wire() {
     renderRows();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "/" && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) {
+    if (e.key === "Escape") { closeTour(); return; }
+    const tourOpen = $("#tour") && !$("#tour").hidden;
+    if (e.key === "/" && !tourOpen &&
+        !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) {
       e.preventDefault();
       $("#search").focus();
     }
   });
+  $("#help").addEventListener("click", openTour);
+  $("#tour-close").addEventListener("click", closeTour);
+  $("#tour").addEventListener("click", (e) => { if (e.target === $("#tour")) closeTour(); });
+  if (!localStorage.getItem(TOUR_KEY)) openTour(); // first visit
   $("#min-volume").addEventListener("change", load);
   $("#limit").addEventListener("change", load);
   $("#perps-only").addEventListener("change", renderRows);

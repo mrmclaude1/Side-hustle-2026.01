@@ -63,6 +63,8 @@ def test_landing_dashboard_and_static():
     assert "BasisPulse" in landing.text and "Pricing" in landing.text
     app_page = client.get("/app")
     assert app_page.status_code == 200 and 'id="cross"' in app_page.text
+    # "Start here" onboarding tour ships with the dashboard.
+    assert 'id="tour"' in app_page.text and "60-second tour" in app_page.text
     assert client.get("/static/app.js").status_code == 200
     assert client.get("/static/landing.js").status_code == 200
 
