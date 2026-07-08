@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BasisPulse — crypto market scanner</title>
+  <meta name="description" content="Live perpetual-vs-spot basis, momentum, volatility and liquidity scanner across crypto markets." />
+  <meta name="theme-color" content="#0b0e14" />
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" style="text-decoration:none;color:inherit;">
+      <span class="logo">◎</span>
+      <div>
+        <h1>BasisPulse</h1>
+        <p class="tag">Perp/spot basis · momentum · volatility · liquidity — one scan.</p>
+      </div>
+    </a>
+    <nav class="section-nav" aria-label="Sections">
+      <a href="#scan">Scan</a>
+      <a href="#cross">Cross-exchange</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#pro">Pro</a>
+    </nav>
+    <div class="status">
+      <a id="plan-pill" class="pill" href="#pro" title="Your plan — manage in the Pro section">plan: …</a>
+      <span id="source-pill" class="pill">…</span>
+      <button id="help" class="ghost-btn" title="Start here — how to use BasisPulse" aria-label="How to use BasisPulse">?</button>
+      <button id="refresh" title="Refresh now">↻ Refresh</button>
+    </div>
+  </header>
+
+  <section class="summary" id="summary"><!-- filled by JS --></section>
+
+  <section class="controls" id="scan">
+    <label><span>Search <kbd class="kbd-hint">/</kbd></span>
+      <input id="search" type="search" placeholder="e.g. BTC" autocomplete="off" />
+    </label>
+    <label>Min 24h volume (USD)
+      <input id="min-volume" type="number" min="0" step="100000" value="0" placeholder="e.g. 1000000" />
+    </label>
+    <label>Show
+      <select id="limit">
+        <option>25</option><option selected>50</option>
+        <option>100</option><option>250</option>
+      </select>
+    </label>
+    <label class="check">
+      <input id="perps-only" type="checkbox" /> Perps only
+    </label>
+    <span class="spacer"></span>
+    <span class="muted" id="updated"></span>
+  </section>
+
+  <p class="hint muted">Click a column to sort · click a row for its history · hover column headers for definitions.</p>
+
+  <div class="table-wrap">
+    <table id="grid">
+      <thead>
+        <tr>
+          <th data-k="base">Asset</th>
+          <th data-k="radar_score" class="num sorted" title="0–100 notability rank blending momentum, basis, volatility and liquidity">Score</th>
+          <th data-k="score_delta" class="num" title="Score change vs the previous recorded snapshot">Δ</th>
+          <th data-k="price" class="num">Price</th>
+          <th data-k="change_pct" class="num" title="24-hour price change">24h %</th>
+          <th data-k="basis_bps" class="num" title="Perp price vs spot price, in basis points. Positive = perp above spot (crowded long)">Basis (bps)</th>
+          <th data-k="range_pct" class="num" title="Intraday high-low range as % of price — a volatility proxy">Range %</th>
+          <th data-k="spread_bps" class="num" title="Bid/ask spread in basis points — lower = more liquid">Spread (bps)</th>
+          <th data-k="open_interest" class="num" title="Outstanding perp contracts">Open Interest</th>
+          <th data-k="volume_usd" class="num" title="24h traded volume in USD">Volume</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr class="state-row"><td colspan="10">Loading market data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="cross" id="cross">
+    <h2>Cross-Exchange dislocation</h2>
+    <p class="muted section-intro">
+      Same asset, priced across <span id="cross-venues">multiple venues</span>.
+      Wide <strong>spread</strong> = dislocation; a positive <strong>arbitrage
+      edge</strong> means the best bid on one venue exceeds the best ask on
+      another (crossed book, before fees/withdrawal limits).
+    </p>
+    <div class="table-wrap">
+      <table id="cross-grid">
+        <thead>
+          <tr>
+            <th class="num" title="Price gap between venues, in basis points">Spread (bps)</th>
+            <th>Asset</th>
+            <th>Venues</th>
+            <th class="num">Ref price</th>
+            <th class="num" title="Best bid minus best ask across venues; positive = crossed book">Arbitrage edge (bps)</th>
+            <th>Buy → Sell</th>
+            <th class="num">Volume</th>
+          </tr>
+        </thead>
+        <tbody id="cross-rows">
+          <tr class="state-row"><td colspan="7">Loading cross-exchange data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="alerts" id="alerts">
+    <h2>Alerts</h2>
+    <p class="muted section-intro">
+      Get notified when any asset crosses your threshold — e.g.
+      <code>Basis ≤ −50</code> or <code>Radar score ≥ 80</code>. Triggers can
+      be pushed to Discord, Slack or Telegram.
+      <span class="muted" title="Rules are evaluated every time a snapshot is recorded (GET /api/snapshot, run on a schedule). Set BASISPULSE_WEBHOOK_URL to enable push delivery.">(how it works)</span>
+    </p>
+    <form id="rule-form" class="rule-form">
+      <input id="rule-name" placeholder="Rule name" aria-label="Rule name" required />
+      <select id="rule-metric" aria-label="Metric"></select>
+      <select id="rule-op" aria-label="Comparison"></select>
+      <input id="rule-threshold" type="number" step="any" placeholder="Threshold" aria-label="Threshold" required />
+      <button type="submit">Add rule</button>
+    </form>
+    <p id="metric-help" class="muted metric-help"></p>
+    <div class="presets">
+      <span class="muted">Quick add:</span>
+      <button type="button" class="preset" data-name="Hot mover" data-metric="radar_score" data-op="&gt;=" data-threshold="80">Score ≥ 80</button>
+      <button type="button" class="preset" data-name="Crowded shorts" data-metric="basis_bps" data-op="&lt;=" data-threshold="-50">Basis ≤ −50 bps</button>
+      <button type="button" class="preset" data-name="Big move" data-metric="abs_change_pct" data-op="&gt;=" data-threshold="10">24h move ≥ 10%</button>
+      <button type="button" class="preset" data-name="Heating up" data-metric="score_delta" data-op="&gt;=" data-threshold="10">Score jump ≥ 10</button>
+    </div>
+    <p id="rule-error" class="rule-error" role="alert" hidden></p>
+    <div class="alerts-grid">
+      <div>
+        <h3>Active rules</h3>
+        <ul id="rule-list" class="rule-list"><li class="muted">None yet.</li></ul>
+      </div>
+      <div>
+        <h3>Recent triggers</h3>
+        <ul id="event-list" class="event-list"><li class="muted">None yet.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="pro" id="pro">
+    <h2>Pro</h2>
+    <p class="muted section-intro">
+      The dashboard is free. Pro unlocks deeper scans, premium signals via API,
+      CSV export, and unlimited alerts.
+    </p>
+    <form id="key-form" class="key-form">
+      <input id="api-key" type="password" placeholder="Paste your API key (bp_…)" aria-label="API key" autocomplete="off" />
+      <button type="submit">Use key</button>
+      <button type="button" id="key-clear" class="ghost-btn" hidden>Clear key</button>
+      <span id="key-status" class="muted"></span>
+    </form>
+    <div id="pricing-grid" class="pricing-grid"></div>
+  </section>
+
+  <footer>
+    <p>
+      Data: Crypto.com public API. <strong>Educational analytics only — not
+      investment advice.</strong> Scores rank how <em>unusual</em> an asset
+      looks now; they do not predict returns. Crypto is volatile and you can
+      lose your entire stake.
+    </p>
+  </footer>
+
+  <div id="tour" class="tour-backdrop" hidden>
+    <div class="tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <h2 id="tour-title">Start here — the 60-second tour</h2>
+      <ol>
+        <li><strong>The big table is the product.</strong> Every market, ranked by
+          <strong>Radar Score</strong> (0–100) — how <em>unusual</em> it's acting right now,
+          blending momentum, perp/spot basis, volatility and liquidity.
+          <span class="accent-text">The top 10 rows are where something is happening</span> —
+          no more scrolling 900 tickers.</li>
+        <li><strong>Click any row</strong> to expand its mini-charts: Score, Price and
+          Basis history for that asset.</li>
+        <li><strong>Sort, search, filter.</strong> Click any column header to sort
+          (try <em>Basis</em> — the most crowded trades). Press <kbd>/</kbd> to search.
+          Tick <em>Perps only</em> for futures markets.</li>
+        <li><strong>History builds from snapshots.</strong> Each snapshot records the whole
+          market; the Δ column and charts compare across them. A <em>·</em> dot means "no
+          change since the last snapshot" — real markets move slowly, so give it time.
+          (In production a schedule records one every 15 minutes; locally, visit
+          <code>/api/snapshot</code>.)</li>
+        <li><strong>Alerts watch the market for you.</strong> Add a rule like
+          <em>Radar score ≥ 80</em> — every snapshot checks it, and triggers can push to
+          Discord or Slack.</li>
+        <li><strong>Cross-Exchange</strong> shows the same coin priced on Binance, Bybit
+          and Crypto.com — the <em>arbitrage edge</em> column flags crossed books
+          (a chance to buy cheaper on one venue than you can sell on another).</li>
+      </ol>
+      <p class="muted">Reopen this anytime with the <strong>?</strong> button in the header.
+        Educational analytics — not investment advice.</p>
+      <button id="tour-close">Got it — show me the market</button>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
