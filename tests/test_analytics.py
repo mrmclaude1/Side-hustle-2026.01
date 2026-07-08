@@ -91,3 +91,44 @@ def test_demo_source_is_fixture():
     snap = sources.get_tickers(force_demo=True)
     assert snap["source"] == "fixture"
     assert len(snap["data"]) > 50
+
+
+def test_v1_short_key_payload_scans():
+    """Crypto.com's v1 API returns short field names and dashed perp symbols;
+    the key normalizer must make them scannable (live bug: LIVE + 0 assets)."""
+    from app import sources
+
+    rows = [
+        {"i": "BTC_USD", "a": "58501.2", "b": "58500.4", "k": "58500.5",
+         "h": "60218.3", "l": "58094.3", "v": "8309", "vv": "488644688",
+         "oi": "0", "c": "-0.0283", "t": 1751326745524},
+        {"i": "BTCUSD-PERP", "a": "58490.0", "b": "58489.0", "k": "58491.0",
+         "h": "60200.0", "l": "58080.0", "v": "9000", "vv": "500000000",
+         "oi": "6069", "c": "-0.0280", "t": 1751326745524},
+        {"i": "1INCHUSD", "a": "0.07024", "b": "0.07031", "k": "0.07035",
+         "h": "0.07281", "l": "0.07002", "v": "50137", "vv": "3562.40",
+         "oi": "0", "c": "-0.0232", "t": 1751326745524},
+    ]
+    data = sources.normalize_ticker_keys(rows)
+    assert all("instrument_name" in t for t in data)
+    result = analytics.scan(data, quote="USD")
+    assert result["summary"]["assets"] == 2
+    btc = next(a for a in result["assets"] if a["base"] == "BTC")
+    assert btc["has_perp"] is True and btc["basis_bps"] is not None
+
+
+def test_fetch_live_rejects_unusable_payload(monkeypatch):
+    """A 'successful' fetch with no usable records must raise so get_tickers
+    degrades to the fixture instead of rendering an empty LIVE dashboard."""
+    import io
+    import urllib.request
+    from app import sources
+
+    body = b'{"result": {"data": [{"x": 1}, {"y": 2}]}}'
+    monkeypatch.setattr(
+        urllib.request, "urlopen",
+        lambda *a, **k: __import__("contextlib").nullcontext(io.BytesIO(body)),
+    )
+    import pytest
+    with pytest.raises(ValueError):
+        sources.fetch_live()

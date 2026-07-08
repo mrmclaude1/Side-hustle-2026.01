@@ -46,9 +46,10 @@ def _normalize(rows: list[dict]) -> list[dict]:
 
 
 def fetch(timeout: float = 10.0) -> list[dict]:
+    from .. import sources  # late import; sources has no import-time dep on us
     payload = base.fetch_json(TICKERS_URL, timeout=timeout)
     rows = payload.get("result", {}).get("data") or payload.get("data") or []
-    return _normalize(rows)
+    return _normalize(sources.normalize_ticker_keys(rows))
 
 
 def load_fixture() -> list[dict]:

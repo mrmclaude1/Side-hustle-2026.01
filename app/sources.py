@@ -34,6 +34,27 @@ def load_fixture() -> list[dict]:
         return json.load(fh)["data"]
 
 
+# Crypto.com's v1 API returns short field names (i, a, b, k, ...); the older
+# shape — and our bundled fixture — uses long ones. Map short -> long so the
+# rest of the pipeline only ever sees one shape.
+_SHORT_KEYS = {
+    "i": "instrument_name", "a": "last", "b": "best_bid", "k": "best_ask",
+    "h": "high", "l": "low", "v": "volume", "vv": "volume_value",
+    "oi": "open_interest", "c": "change", "t": "timestamp",
+}
+
+
+def normalize_ticker_keys(rows: list[dict]) -> list[dict]:
+    """Accept both Crypto.com ticker shapes (v1 short keys / legacy long)."""
+    out = []
+    for t in rows:
+        if "instrument_name" in t:
+            out.append(t)
+        else:
+            out.append({_SHORT_KEYS.get(k, k): v for k, v in t.items()})
+    return out
+
+
 def fetch_live(timeout: float = 10.0) -> list[dict]:
     """Fetch a fresh ticker snapshot from Crypto.com. Raises on failure."""
     req = urllib.request.Request(
@@ -45,6 +66,11 @@ def fetch_live(timeout: float = 10.0) -> list[dict]:
     data = payload.get("result", {}).get("data") or payload.get("data")
     if not isinstance(data, list) or not data:
         raise ValueError("unexpected ticker payload shape")
+    data = normalize_ticker_keys(data)
+    # A "successful" fetch with no usable records must degrade to the fixture,
+    # not render an empty LIVE dashboard.
+    if not any(t.get("instrument_name") for t in data):
+        raise ValueError("no usable ticker records in payload")
     return data
 
 
