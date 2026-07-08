@@ -127,3 +127,32 @@ def test_snapshot_triggers_and_lists_events():
     assert "base" in events[0]
 
     client.delete(f"/api/alerts/{rid}")
+
+
+def test_cross_excludes_stale_fixture_venues(monkeypatch):
+    """When one venue is live and another degraded to its bundled fixture,
+    the stale venue must be excluded — mixing them manufactures fake
+    arbitrage edges (live bug: ETH showing an 1135 bps 'edge')."""
+    from app import main as m
+    from app.exchanges import base as xb
+
+    recs = [
+        xb.normalized("cryptocom", "BTC", "USD", "spot", price=60000,
+                      change_pct=1.0, high=61000, low=59000,
+                      bid=59999, ask=60001, volume_usd=1e9, open_interest=None),
+        xb.normalized("binance", "BTC", "USDT", "spot", price=58000,
+                      change_pct=1.0, high=59000, low=57000,
+                      bid=57999, ask=58001, volume_usd=1e9, open_interest=None),
+    ]
+    monkeypatch.setattr(
+        m.sources, "get_records",
+        lambda force_demo=None: {
+            "records": recs,
+            "sources": {"cryptocom": "live", "binance": "fixture"},
+            "age": 0.0,
+        },
+    )
+    body = client.get("/api/cross").json()
+    assert body["meta"]["excluded_stale_venues"] == ["binance"]
+    # Only one live venue remains -> no cross-venue rows, no fake edges.
+    assert body["summary"]["assets"] == 0

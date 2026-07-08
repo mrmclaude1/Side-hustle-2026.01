@@ -40,11 +40,11 @@ const FEATURE_LABELS = {
 };
 const METRIC_LABELS = {
   radar_score: "Radar score",
-  score_delta: "Score Δ",
+  score_delta: "Score change",
   basis_bps: "Basis (bps)",
-  abs_basis_bps: "|Basis| (bps)",
+  abs_basis_bps: "Basis size (bps)",
   change_pct: "24h change %",
-  abs_change_pct: "|24h change| %",
+  abs_change_pct: "24h move size %",
   range_pct: "Range %",
   volume_usd: "Volume (USD)",
 };
@@ -141,7 +141,7 @@ function renderSummary(s, meta, topAsset) {
       `<a href="#scan" class="plain locate" data-base="${esc(topAsset.base)}">${esc(topAsset.base)} · ${topAsset.radar_score.toFixed(1)}</a>`, ""]);
   }
   if (state.bestArb) {
-    cards.push(["Best arb edge",
+    cards.push(["Best arbitrage edge",
       `<a href="#cross" class="plain">${esc(state.bestArb.base)} · ${state.bestArb.edge_bps.toFixed(1)} bps</a>`, ""]);
   }
   cards.push(
@@ -447,8 +447,12 @@ async function loadCross() {
     if (!res.ok) throw new Error("cross " + res.status);
     const data = await res.json();
     const s = data.summary;
-    $("#cross-venues").textContent =
-      s.venues.length ? s.venues.join(", ") : "multiple venues";
+    const excluded = (data.meta && data.meta.excluded_stale_venues) || [];
+    let venuesText = s.venues.length ? s.venues.join(", ") : "multiple venues";
+    if (excluded.length) {
+      venuesText += ` — ${excluded.join(", ")} unreachable from your network, excluded to avoid stale-price artifacts`;
+    }
+    $("#cross-venues").textContent = venuesText;
     $("#cross-rows").innerHTML = data.assets.length
       ? data.assets
           .map((a) => {
@@ -477,11 +481,11 @@ async function loadCross() {
     // renderSummary ran before this data arrived.
     if (state.bestArb) {
       const cards = document.querySelectorAll("#summary .card");
-      let arbCard = [...cards].find((c) => c.querySelector(".k")?.textContent === "Best arb edge");
+      let arbCard = [...cards].find((c) => c.querySelector(".k")?.textContent === "Best arbitrage edge");
       if (!arbCard && cards.length) {
         arbCard = document.createElement("div");
         arbCard.className = "card";
-        arbCard.innerHTML = '<div class="k">Best arb edge</div><div class="v"></div>';
+        arbCard.innerHTML = '<div class="k">Best arbitrage edge</div><div class="v"></div>';
         cards[0].after(arbCard);
       }
       if (arbCard) {

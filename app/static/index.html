@@ -82,9 +82,9 @@
     <h2>Cross-Exchange dislocation</h2>
     <p class="muted section-intro">
       Same asset, priced across <span id="cross-venues">multiple venues</span>.
-      Wide <strong>spread</strong> = dislocation; a positive <strong>arb edge</strong>
-      means the best bid on one venue exceeds the best ask on another (crossed
-      book, before fees/withdrawal limits).
+      Wide <strong>spread</strong> = dislocation; a positive <strong>arbitrage
+      edge</strong> means the best bid on one venue exceeds the best ask on
+      another (crossed book, before fees/withdrawal limits).
     </p>
     <div class="table-wrap">
       <table id="cross-grid">
@@ -94,7 +94,7 @@
             <th>Asset</th>
             <th>Venues</th>
             <th class="num">Ref price</th>
-            <th class="num" title="Best bid minus best ask across venues; positive = crossed book">Arb edge (bps)</th>
+            <th class="num" title="Best bid minus best ask across venues; positive = crossed book">Arbitrage edge (bps)</th>
             <th>Buy → Sell</th>
             <th class="num">Volume</th>
           </tr>
@@ -110,7 +110,7 @@
     <h2>Alerts</h2>
     <p class="muted section-intro">
       Get notified when any asset crosses your threshold — e.g.
-      <code>basis_bps ≤ −50</code> or <code>radar_score ≥ 80</code>. Triggers can
+      <code>Basis ≤ −50</code> or <code>Radar score ≥ 80</code>. Triggers can
       be pushed to Discord, Slack or Telegram.
       <span class="muted" title="Rules are evaluated every time a snapshot is recorded (GET /api/snapshot, run on a schedule). Set BASISPULSE_WEBHOOK_URL to enable push delivery.">(how it works)</span>
     </p>
@@ -189,7 +189,8 @@
           <em>Radar score ≥ 80</em> — every snapshot checks it, and triggers can push to
           Discord or Slack.</li>
         <li><strong>Cross-Exchange</strong> shows the same coin priced on Binance, Bybit
-          and Crypto.com — the <em>arb edge</em> column flags crossed books.</li>
+          and Crypto.com — the <em>arbitrage edge</em> column flags crossed books
+          (a chance to buy cheaper on one venue than you can sell on another).</li>
       </ol>
       <p class="muted">Reopen this anytime with the <strong>?</strong> button in the header.
         Educational analytics — not investment advice.</p>

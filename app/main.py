@@ -350,10 +350,21 @@ def api_cross(
     demo: bool = Query(False),
 ) -> JSONResponse:
     snap = sources.get_records(force_demo=True if demo else None)
-    result = xexchange.cross_scan(
-        snap["records"], min_venues=min_venues, limit=limit
-    )
-    result["meta"] = {"sources": snap["sources"], "cache_age_s": snap["age"]}
+    records, srcs = snap["records"], snap["sources"]
+    # Stale fixture prices must never be compared against live ones — a mixed
+    # set manufactures huge fake spreads/arbitrage edges (e.g. a geo-blocked
+    # venue degrading to its bundled snapshot). If any venue is live, compare
+    # live venues only.
+    excluded: list = []
+    if "live" in srcs.values() and "fixture" in srcs.values():
+        excluded = sorted(v for v, s in srcs.items() if s == "fixture")
+        records = [r for r in records if srcs.get(r["exchange"]) == "live"]
+    result = xexchange.cross_scan(records, min_venues=min_venues, limit=limit)
+    result["meta"] = {
+        "sources": srcs,
+        "cache_age_s": snap["age"],
+        "excluded_stale_venues": excluded,
+    }
     return JSONResponse(result)
 
 
