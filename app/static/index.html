@@ -121,6 +121,14 @@
       <input id="rule-threshold" type="number" step="any" placeholder="Threshold" aria-label="Threshold" required />
       <button type="submit">Add rule</button>
     </form>
+    <p id="metric-help" class="muted metric-help"></p>
+    <div class="presets">
+      <span class="muted">Quick add:</span>
+      <button type="button" class="preset" data-name="Hot mover" data-metric="radar_score" data-op="&gt;=" data-threshold="80">Score ≥ 80</button>
+      <button type="button" class="preset" data-name="Crowded shorts" data-metric="basis_bps" data-op="&lt;=" data-threshold="-50">Basis ≤ −50 bps</button>
+      <button type="button" class="preset" data-name="Big move" data-metric="abs_change_pct" data-op="&gt;=" data-threshold="10">24h move ≥ 10%</button>
+      <button type="button" class="preset" data-name="Heating up" data-metric="score_delta" data-op="&gt;=" data-threshold="10">Score jump ≥ 10</button>
+    </div>
     <p id="rule-error" class="rule-error" role="alert" hidden></p>
     <div class="alerts-grid">
       <div>

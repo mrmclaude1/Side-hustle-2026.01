@@ -204,6 +204,13 @@ svg.spark { vertical-align: middle; background: var(--panel-2); border-radius: 6
 }
 .rule-error { color: var(--red); font-size: 12.5px; margin: 6px 0 0; }
 .rule-error a { color: var(--accent); }
+.metric-help { margin: 2px 0 0; max-width: 720px; line-height: 1.5; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+button.preset {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  font-weight: 500; padding: 5px 11px; border-radius: 999px; font-size: 12px;
+}
+button.preset:hover { border-color: var(--accent); color: var(--accent); filter: none; }
 .alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 12px; }
 .rule-list, .event-list { list-style: none; padding: 0; margin: 8px 0; max-height: 340px; overflow-y: auto; }
 .rule-list li, .event-list li {

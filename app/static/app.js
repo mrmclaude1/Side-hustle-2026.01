@@ -58,6 +58,26 @@ const METRIC_HINTS = {
   range_pct: "e.g. 20 (%)",
   volume_usd: "e.g. 1000000 (USD)",
 };
+// Plain-English explainer + a sensible starting threshold for each metric,
+// shown under the alert form as the user picks a metric.
+const METRIC_INFO = {
+  radar_score:
+    "How unusual an asset looks right now, 0–100. Typical alert: ≥ 80 catches only the hottest handful; ≥ 60 is a looser net.",
+  score_delta:
+    "How much the score changed since the previous snapshot — a rising score is something heating up. Typical alert: ≥ 10.",
+  basis_bps:
+    "Perp price minus spot price, in basis points (1 bp = 0.01%). Positive = longs paying a premium (crowded long); negative = perp at a discount (crowded short). Typical alerts: ≤ −50 or ≥ 50.",
+  abs_basis_bps:
+    "Size of the perp/spot gap in either direction — stretched positioning regardless of side. Typical alert: ≥ 50.",
+  change_pct:
+    "24-hour price change in percent, with direction. Typical alerts: ≤ −10 (dumping) or ≥ 10 (pumping).",
+  abs_change_pct:
+    "Size of the 24-hour move in either direction — big movers, up or down. Typical alert: ≥ 10.",
+  range_pct:
+    "Today's high-to-low range as % of price — a volatility gauge. Typical alert: ≥ 20 (a wild day).",
+  volume_usd:
+    "24-hour traded volume in US dollars. Typical alert: ≥ 1000000 to only watch liquid markets ($1M+).",
+};
 
 const DASH = '<span class="dim">—</span>';
 
@@ -489,7 +509,7 @@ async function loadAlerts() {
     const mSel = $("#rule-metric"), oSel = $("#rule-op");
     if (mSel && !mSel.options.length) {
       mSel.innerHTML = meta.metrics
-        .map((m) => `<option value="${esc(m)}">${METRIC_LABELS[m] || esc(m)}</option>`).join("");
+        .map((m) => `<option value="${esc(m)}" title="${esc(METRIC_INFO[m] || "")}">${METRIC_LABELS[m] || esc(m)}</option>`).join("");
       oSel.innerHTML = meta.ops.map((o) => `<option>${esc(o)}</option>`).join("");
       updateThresholdHint();
     }
@@ -514,6 +534,8 @@ function updateThresholdHint() {
   const m = $("#rule-metric")?.value;
   const t = $("#rule-threshold");
   if (m && t) t.placeholder = METRIC_HINTS[m] || "Threshold";
+  const help = $("#metric-help");
+  if (m && help) help.textContent = METRIC_INFO[m] || "";
 }
 
 async function addRule(e) {
@@ -629,6 +651,17 @@ function wire() {
   $("#rule-form").addEventListener("submit", addRule);
   $("#rule-form").addEventListener("input", () => showRuleError(""));
   $("#rule-metric").addEventListener("change", updateThresholdHint);
+  // Preset chips prefill the form (teaching it), rather than adding blindly.
+  document.querySelectorAll("button.preset").forEach((b) => {
+    b.addEventListener("click", () => {
+      $("#rule-name").value = b.dataset.name;
+      $("#rule-metric").value = b.dataset.metric;
+      $("#rule-op").value = b.dataset.op;
+      $("#rule-threshold").value = b.dataset.threshold;
+      updateThresholdHint();
+      $("#rule-form button[type=submit]").focus();
+    });
+  });
   const keyForm = $("#key-form");
   if (keyForm) {
     keyForm.addEventListener("submit", saveKey);

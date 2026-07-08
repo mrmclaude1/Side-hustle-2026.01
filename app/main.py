@@ -373,6 +373,17 @@ def api_asset(base: str, demo: bool = False) -> JSONResponse:
     )
 
 
+# Cache-buster for CSS/JS: changes on every server (re)start, so a pull +
+# restart always reaches the browser without a hard refresh.
+_ASSET_V = str(int(time.time()))
+
+
+def _stamp_assets(html: str) -> str:
+    for name in ("styles.css", "landing.css", "app.js", "landing.js"):
+        html = html.replace(f"/static/{name}", f"/static/{name}?v={_ASSET_V}")
+    return html
+
+
 @app.get("/")
 def landing(request: Request) -> HTMLResponse:
     # OG/Twitter scrapers require absolute URLs, so template the request host
@@ -382,12 +393,13 @@ def landing(request: Request) -> HTMLResponse:
     html = html.replace('content="/static/og.png"', f'content="{base}static/og.png"')
     html = html.replace('<link rel="canonical" href="/" />',
                         f'<link rel="canonical" href="{base}" />')
-    return HTMLResponse(html)
+    return HTMLResponse(_stamp_assets(html))
 
 
 @app.get("/app")
-def dashboard() -> FileResponse:
-    return FileResponse(_STATIC / "index.html")
+def dashboard() -> HTMLResponse:
+    html = (_STATIC / "index.html").read_text(encoding="utf-8")
+    return HTMLResponse(_stamp_assets(html))
 
 
 # Serve CSS/JS. Mounted last so it doesn't shadow the API routes above.
